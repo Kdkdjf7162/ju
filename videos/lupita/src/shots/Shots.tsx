@@ -28,7 +28,7 @@ const Shot3D: React.FC<{ from: CamKey; to: CamKey; drift?: number; seed?: number
   const { width, height } = useVideoConfig();
   return (
     <>
-      <ThreeCanvas width={width} height={height} shadows dpr={1} gl={{ antialias: true }}>
+      <ThreeCanvas width={width} height={height} shadows="percentage" dpr={0.72} gl={{ antialias: true }}>
         <ShotCam from={from} to={to} drift={drift} seed={seed} frame={frame} k={k} lin={lin} />
         {children}
       </ThreeCanvas>

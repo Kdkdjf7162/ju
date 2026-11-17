@@ -9,7 +9,7 @@ type V3 = [number, number, number];
 // ---------- Luces ----------
 export type Mood = "day" | "dusk" | "night" | "indoor" | "hospital";
 
-const SHADOW = 1536;
+const SHADOW = 1024;
 
 export const Lights: React.FC<{ mood: Mood; target?: V3 }> = ({ mood, target = [0, 0, 0] }) => {
   const cfg = {

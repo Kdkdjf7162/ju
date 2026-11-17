@@ -204,7 +204,7 @@ export const LampPost: React.FC<{ position: V3; on?: boolean }> = ({ position, o
     <mesh position={[0.5, 3.09, 0]} material={mat(on ? "#fff3c4" : "#d8d8d8", 0.3, on ? { emissive: "#ffd77a", emissiveIntensity: 2.5 } : {})}>
       <sphereGeometry args={[0.09, 16, 10]} />
     </mesh>
-    {on && <pointLight position={[0.5, 2.9, 0.1]} intensity={9} distance={7} decay={1.6} color="#ffc66b" castShadow shadow-mapSize-width={512} shadow-mapSize-height={512} />}
+    {on && <pointLight position={[0.5, 2.9, 0.1]} intensity={9} distance={7} decay={1.6} color="#ffc66b" />}
   </group>
 );
 
