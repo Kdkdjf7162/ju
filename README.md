@@ -1,6 +1,6 @@
 # Taller de YouTube Shorts con Claude
 
-Este repo trae instaladas **171 skills** en `.claude/skills/`. Cualquier sesión de Claude Code que abras en este repo las carga solas.
+Este repo trae instaladas **172 skills** en `.claude/skills/`. Cualquier sesión de Claude Code que abras en este repo las carga solas.
 El origen de cada una está en `.claude/skills-sources.tsv`. Para instalar las herramientas de terminal, corre `./setup.sh` (instala yt-dlp, markitdown, graphify y ffmpeg).
 
 ## Flujo recomendado para un Short
