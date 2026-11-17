@@ -49,26 +49,26 @@ export const B1 = ({ len }: { len: number }) => {
   const shake = Math.sin(f * 1.7) * 0.01 * (f / len);
   return (
     <Shot a={{ pos: [0.9, 1.55, -1.6], look: [0, 1.05, 1.5], fov: 44 }} b={{ pos: [0.25, 1.35, -0.4], look: [0, 1.15, 1.5], fov: 36, roll: 0.03 }} len={len}>
-      <Room tv={["GTA VI", `00:00:0${n}`]} glow={1 + 0.3 * Math.sin(f * 0.5)} />
+      <Room tv={["GTA 6", `00:00:0${n}`]} glow={1 + 0.3 * Math.sin(f * 0.5)} />
       <Guy o={PLAYER} opts={{ mode: "sit", prop: "controller", expr: f > 50 ? "shock" : "nervous", blink: blink(f, 1), seed: 3 }} position={[shake, 0.32, 1.45]} yaw={Math.PI} />
     </Shot>
   );
 };
 
-// =================== 2. Salió GTA VI ===================
+// =================== 2. Salió GTA 6 ===================
 export const B2 = ({ len }: { len: number }) => {
   const f = useCurrentFrame();
   if (f < 26)
     return (
       <Shot a={{ pos: [0, 1.65, -1.4], look: [0, 1.65, -3.4], fov: 40 }} b={{ pos: [0, 1.65, -1.9], look: [0, 1.65, -3.4], fov: 36 }} len={26} kicks={[4]}>
-        <Room tv={["GTA VI", "YA DISPONIBLE"]} tvBg="#ff2bd6" glow={2} />
+        <Room tv={["GTA 6", "YA DISPONIBLE"]} tvBg="#ff2bd6" glow={2} />
       </Shot>
     );
   const g = f - 26;
   const jump = Math.abs(Math.sin(g * 0.35)) * 0.35;
   return (
     <Shot a={{ pos: [0.4, 1.0, -0.6], look: [0, 1.3, 1.5], fov: 46 }} b={{ pos: [-0.3, 0.95, -0.3], look: [0, 1.45, 1.5], fov: 42, roll: -0.05 }} len={len - 26} kicks={[0, 12]}>
-      <Room tv={["GTA VI", "YA DISPONIBLE"]} tvBg="#ff2bd6" glow={2} />
+      <Room tv={["GTA 6", "YA DISPONIBLE"]} tvBg="#ff2bd6" glow={2} />
       <Guy o={PLAYER} opts={{ mode: "stand", prop: "panic", expr: "relief_open", seed: 3 }} position={[0, 0.25 + jump, 1.3]} yaw={Math.PI} />
       {/* confeti de bolitas de colores */}
       {Array.from({ length: 30 }, (_, i) => (
@@ -291,8 +291,8 @@ export const B12 = ({ len }: { len: number }) => {
 
 export type BeatDef = { a: number; b: number; C: React.FC<{ len: number }>; title: string; mood?: string };
 export const BEATS: BeatDef[] = [
-  { a: 0, b: 90, C: B1, title: "FALTAN 5 SEGUNDOS PARA GTA VI" },
-  { a: 90, b: 165, C: B2, title: "¡SALIÓ GTA VI!" },
+  { a: 0, b: 90, C: B1, title: "FALTAN 5 SEGUNDOS PARA GTA 6" },
+  { a: 90, b: 165, C: B2, title: "¡SALIÓ GTA 6!" },
   { a: 165, b: 255, C: B3, title: "DÍA 1: NADIE VA A TRABAJAR" },
   { a: 255, b: 345, C: B4, title: "LOS PANADEROS TAMBIÉN JUEGAN… NO HAY PAN" },
   { a: 345, b: 435, C: B5, title: "DÍA 2: PELEAS POR EL ÚLTIMO PAN" },
