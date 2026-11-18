@@ -59,13 +59,13 @@ function drawBall(x, y, r, h, px, py, alpha = 1) {
 }
 function text(str, x, y, size, fill = '#fff', stroke = 16) { g.font = `900 ${size}px Inter, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = stroke; g.strokeStyle = '#05060f'; g.strokeText(str, x, y); g.fillStyle = fill; g.fillText(str, x, y); }
 function hud(t, hp, n) {
-  if (t < 3.6 && !post) { const k = Math.min(1, t / .25), o = t > 3.2 ? 1 - (t - 3.2) / .4 : 1; g.globalAlpha = k * o; text('CADA GOLPE', W / 2, 150, 104); text('LO DUPLICA', W / 2, 255, 104, '#ffd23a'); g.globalAlpha = 1; }
+  if (t < 3.6 && !post) { const k = Math.min(1, t / .25), o = t > 3.2 ? 1 - (t - 3.2) / .4 : 1; g.globalAlpha = k * o; text('EVERY HIT', W / 2, 150, 104); text('DOUBLES IT', W / 2, 255, 104, '#ffd23a'); g.globalAlpha = 1; }
   const sc = 1 + .35 * counterPop; g.save(); g.translate(W / 2, 385); 
   if (t >= 3.6 || post) { g.scale(sc, sc); text('×' + n, 0, 0, 150, `hsl(${ringHue(hp)},100%,70%)`, 20); }
   else { g.scale(sc, sc); text('×' + n, 0, 0, 120, '#fff', 18); }
   g.restore();
   // barra de resistencia
-  if (!post) { const bw = 760, bx = (W - bw) / 2, by = 1500; text('RESISTENCIA DEL CÍRCULO', W / 2, by - 60, 44, '#fff', 12);
+  if (!post) { const bw = 760, bx = (W - bw) / 2, by = 1500; text('CIRCLE HEALTH', W / 2, by - 60, 44, '#fff', 12);
     g.fillStyle = 'rgba(255,255,255,.14)'; g.beginPath(); g.roundRect(bx, by, bw, 46, 23); g.fill();
     g.fillStyle = `hsl(${ringHue(hp)},100%,60%)`; g.beginPath(); g.roundRect(bx, by, Math.max(46, bw * hp), 46, 23); g.fill();
     g.strokeStyle = '#05060f'; g.lineWidth = 6; g.beginPath(); g.roundRect(bx, by, bw, 46, 23); g.stroke(); }
@@ -112,8 +112,8 @@ function frame(f) {
   if (afterEx) {
     if (te >= 1.75) { if (endT0 === null) endT0 = te; const k = clamp((te - 1.75) / .35, 0, 1), e = outBack(k);
       g.fillStyle = `rgba(5,6,15,${.82 * clamp((te - 1.6) / .3, 0, 1)})`; g.fillRect(0, 0, W, H);
-      g.save(); g.translate(W / 2, 800); g.scale(e, e); text(nShow + ' BOLITAS', 0, -40, 130, '#ffd23a', 22); g.restore();
-      if (te > 2.2) { g.globalAlpha = clamp((te - 2.2) / .3, 0, 1); text('¿HASTA CUÁNTAS', W / 2, 1010, 82); text('LLEGARÍAS VOS?', W / 2, 1110, 82, '#7df9ff'); g.globalAlpha = 1; } }
+      g.save(); g.translate(W / 2, 930); g.scale(e, e); text(nShow + ' BALLS', 0, 0, 150, '#ffd23a', 24); g.restore();
+      }
     if (fl > 0) { g.fillStyle = `rgba(255,255,255,${fl})`; g.fillRect(0, 0, W, H); fl = Math.max(0, fl - .12); }
   }
   if (hold) { g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(0, 0, W, H); }
