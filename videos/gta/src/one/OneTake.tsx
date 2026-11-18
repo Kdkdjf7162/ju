@@ -17,12 +17,12 @@ const Scene: React.FC = () => {
   const y = c.pos[1];
   const starA = Math.max(0, Math.min(1, (y - 140) / 220));
   // qué partes del mundo se dibujan (para que el render no sea eterno)
-  const showHouse = f < 240 || f > 1050;
-  const showCity = f < 560 || f > 1040;
-  const showPlant = f > 300 && f < 560;
-  const showLaunch = f > 440 && f < 900;
-  const showSpace = f > 640 && f < 1060;
-  const showSats = f > 950 && f < 1100;
+  const showHouse = f < 262 || f > 1150;
+  const showCity = f < 712 || f > 1120;
+  const showPlant = f > 520 && f < 730;
+  const showLaunch = f > 690 && f < 1085;
+  const showSpace = f > 900 && f < 1150;
+  const showSats = f > 1085 && f < 1200;
   return (
     <ThreeCanvas width={width} height={height} dpr={0.75} gl={{ antialias: true }}>
       <CameraRig pos={pos} look={c.look} fov={c.fov} roll={k * 0.01} />
@@ -59,7 +59,7 @@ const Caption: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          top: big ? 760 : 200,
+          top: big ? 1290 : 200,
           left: 50,
           right: 50,
           textAlign: "center",
@@ -110,7 +110,7 @@ const Fx: React.FC = () => {
   const f = useCurrentFrame();
   const flash = Math.max(0, ...FLASH.map((a) => interpolate(f, [a, a + 2, a + 9], [0, a === T.impact ? 1 : 0.6, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })));
   const r = f - T.impact;
-  const dark = interpolate(f, [T.lightsOff, T.lightsOff + 4, T.lightsOff + 40], [0, 0.45, 0.15], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) * (f < 560 ? 1 : 0);
+  const dark = interpolate(f, [T.lightsOff, T.lightsOff + 4, T.lightsOff + 40], [0, 0.45, 0.15], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) * (f < T.fuel ? 1 : 0);
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <AbsoluteFill style={{ background: "#0a0a30", opacity: dark }} />
@@ -132,6 +132,7 @@ export const OneTake: React.FC = () => (
     <Scene />
     <Fx />
     <Caption />
+    <Audio src={staticFile("voz/voz.wav")} volume={1} />
     {CUES1.map((c, i) => (
       <Sequence key={i} from={c.f} durationInFrames={Math.max(1, c.dur ?? 60)} layout="none">
         <Audio src={staticFile(`sfx/${c.name}.wav`)} volume={c.vol ?? 1} />

@@ -86,7 +86,7 @@ export const House: React.FC<{ f: number; cam: V3 }> = ({ f, cam }) => {
     </group>
   );
   const net = f >= T.netDown;
-  const tv = net ? tvTex(["SIN CONEXIÓN", ":("], "#2a2a2a", "#ffffff", "#5a5a5a") : f < 120 ? tvTex(["GTA 6", "JUGAR ▶"], "#1a0a3a", "#ffffff", "#ff2bd6") : tvTex(["GTA 6", "MISIÓN 1"], "#0a1a3a", "#ffffff", "#2bd6ff");
+  const tv = net ? tvTex(["SIN CONEXIÓN", ":("], "#2a2a2a", "#ffffff", "#5a5a5a") : f < 130 ? tvTex(["GTA 6", "JUGAR ▶"], "#1a0a3a", "#ffffff", "#ff2bd6") : tvTex(["GTA 6", "MISIÓN 1"], "#0a1a3a", "#ffffff", "#2bd6ff");
   const tvMat = useMemo(() => new THREE.MeshBasicMaterial({ map: tv, toneMapped: false }), [tv]);
   const panic = f >= T.netDown + 4;
   return (
@@ -133,7 +133,7 @@ export const House: React.FC<{ f: number; cam: V3 }> = ({ f, cam }) => {
       <IBox size={[0.7, 0.07, 0.7]} position={[0.5, 0.04, 0.3]} color="#e8c87a" ink={0.02} />
       <Bill
         o={PLAYER}
-        opts={{ mode: panic ? "stand" : "sit", prop: panic ? "panic" : "controller", expr: panic ? "shock" : f > 1140 ? "shock" : "grin", blink: blink(f, 1), seed: 3, tilt: panic ? Math.sin(f * 0.9) * 6 : 0 }}
+        opts={{ mode: panic ? "stand" : "sit", prop: panic ? "panic" : "controller", expr: panic ? "shock" : "grin", blink: blink(f, 1), seed: 3, tilt: panic ? Math.sin(f * 0.9) * 6 : 0 }}
         at={[0, panic ? 0.02 : 0.32, -0.95]}
         cam={cam}
       />
@@ -174,7 +174,7 @@ export const City: React.FC<{ f: number; cam: V3 }> = ({ f, cam }) => {
       </mesh>
     </group>
   );
-  const arrowDrop = Math.min(1, Math.max(0, (f - 280) / 50));
+  const arrowDrop = Math.min(1, Math.max(0, (f - 452) / 60));
   return (
     <group>
       {/* suelo plano de la ciudad + planeta enorme debajo */}
@@ -305,7 +305,7 @@ export const LaunchSite: React.FC<{ f: number; cam: V3 }> = ({ f, cam }) => {
       </group>
       <Bill o={{ ...folk(6), jacket: "#f4f1ea", hat: "cap", cap: "#2f6fb8" }} opts={{ mode: "stand", prop: f > T.ignite ? "panic" : null, expr: f > T.ignite ? "shock" : "nervous", blink: blink(f, 5), seed: 14 }} at={[ROCKET0[0] - 9, 0.6, ROCKET0[2] + 13]} cam={cam} scale={1.2} />
       {/* humo del despegue */}
-      {f > T.ignite && f < 760 && <Smoke origin={[ROCKET0[0], 1, ROCKET0[2]]} t={f / 10} n={22} spread={14} rise={4} color="#ece6dc" />}
+      {f > T.ignite && f < T.liftoff + 110 && <Smoke origin={[ROCKET0[0], 1, ROCKET0[2]]} t={f / 10} n={22} spread={14} rise={4} color="#ece6dc" />}
       {/* el cohete y su llama */}
       <group position={r.pos} rotation={[0, 0, r.tilt]}>
         <Rocket position={[0, 0, 0]} scale={2.4} />
@@ -426,7 +426,7 @@ export const Satellites: React.FC<{ f: number }> = ({ f }) => {
       {hit && f < T.satHit + 20 && (
         <group>
           {SATS.map((p, i) => (
-            <mesh key={i} position={p} scale={2 + (f - T.satHit) * 0.6}>
+            <mesh key={i} position={p} scale={1.2 + (f - T.satHit) * 0.3}>
               <sphereGeometry args={[1, 16, 12]} />
               <meshBasicMaterial color="#fff2a0" transparent opacity={Math.max(0, 1 - (f - T.satHit) / 20)} toneMapped={false} />
             </mesh>
