@@ -1,0 +1,658 @@
+[
+ {
+  "frame": 1,
+  "t": 0.033,
+  "sound": "whoosh-slow-soft",
+  "gain_db": -18,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 4,
+  "t": 0.133,
+  "sound": "pop-medium-in",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 16,
+  "t": 0.533,
+  "sound": "footstep_grass_000.ogg",
+  "gain_db": -10,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 24,
+  "t": 0.8,
+  "sound": "footstep_grass_002.ogg",
+  "gain_db": -13,
+  "sync": "peak",
+  "pitch": 1.1
+ },
+ {
+  "frame": 30,
+  "t": 1.0,
+  "sound": "impactSoft_medium_000.ogg",
+  "gain_db": -6,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 30,
+  "t": 1.0,
+  "sound": "pop-small-in",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 33,
+  "t": 1.1,
+  "sound": "footstep_grass_003.ogg",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.2
+ },
+ {
+  "frame": 58,
+  "t": 1.933,
+  "sound": "whoosh-fast-medium",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 60,
+  "t": 2.0,
+  "sound": "pop-medium-in",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 61,
+  "t": 2.033,
+  "sound": "tone-step-1",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 76,
+  "t": 2.533,
+  "sound": "tick_002.ogg",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 96,
+  "t": 3.2,
+  "sound": "tick_004.ogg",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 112,
+  "t": 3.733,
+  "sound": "foley-fabric-touch",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 113,
+  "t": 3.767,
+  "sound": "boom-drop-soft",
+  "gain_db": -22,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 131,
+  "t": 4.367,
+  "sound": "tick_002.ogg",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 148,
+  "t": 4.933,
+  "sound": "whoosh-medium-medium",
+  "gain_db": -13,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 150,
+  "t": 5.0,
+  "sound": "pop-medium-in",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 151,
+  "t": 5.033,
+  "sound": "tone-step-2",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 152,
+  "t": 5.067,
+  "sound": "time-clock-fast",
+  "gain_db": -17,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 193,
+  "t": 6.433,
+  "sound": "whoosh-fast-soft",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 195,
+  "t": 6.5,
+  "sound": "pop-large-in",
+  "gain_db": -10,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 195,
+  "t": 6.5,
+  "sound": "footstep_grass_001.ogg",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.3
+ },
+ {
+  "frame": 198,
+  "t": 6.6,
+  "sound": "pop-small-in",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.1
+ },
+ {
+  "frame": 201,
+  "t": 6.7,
+  "sound": "pop-small-in",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.25
+ },
+ {
+  "frame": 197,
+  "t": 6.567,
+  "sound": "shimmer-medium-soft",
+  "gain_db": -18,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 206,
+  "t": 6.867,
+  "sound": "tone-ding-high",
+  "gain_db": -19,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 212,
+  "t": 7.067,
+  "sound": "cloth2.ogg",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 253,
+  "t": 8.433,
+  "sound": "whoosh-fast-hard",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 255,
+  "t": 8.5,
+  "sound": "pop-medium-in",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 256,
+  "t": 8.533,
+  "sound": "tone-step-3",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 258,
+  "t": 8.6,
+  "sound": "time-clock-fast",
+  "gain_db": -19,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 290,
+  "t": 9.667,
+  "sound": "impactWood_medium_000.ogg",
+  "gain_db": -8,
+  "sync": "peak",
+  "pitch": 0.9
+ },
+ {
+  "frame": 294,
+  "t": 9.8,
+  "sound": "impactWood_medium_001.ogg",
+  "gain_db": -8,
+  "sync": "peak",
+  "pitch": 0.97
+ },
+ {
+  "frame": 298,
+  "t": 9.933,
+  "sound": "impactWood_medium_002.ogg",
+  "gain_db": -8,
+  "sync": "peak",
+  "pitch": 1.04
+ },
+ {
+  "frame": 302,
+  "t": 10.067,
+  "sound": "impactWood_medium_003.ogg",
+  "gain_db": -8,
+  "sync": "peak",
+  "pitch": 1.11
+ },
+ {
+  "frame": 306,
+  "t": 10.2,
+  "sound": "impactWood_medium_004.ogg",
+  "gain_db": -8,
+  "sync": "peak",
+  "pitch": 1.1800000000000002
+ },
+ {
+  "frame": 312,
+  "t": 10.4,
+  "sound": "bookFlip1.ogg",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 313,
+  "t": 10.433,
+  "sound": "pop-small-in",
+  "gain_db": -20,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 317,
+  "t": 10.567,
+  "sound": "bookFlip2.ogg",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.08
+ },
+ {
+  "frame": 322,
+  "t": 10.733,
+  "sound": "bookFlip1.ogg",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.16
+ },
+ {
+  "frame": 323,
+  "t": 10.767,
+  "sound": "pop-small-in",
+  "gain_db": -20,
+  "sync": "peak",
+  "pitch": 1.1
+ },
+ {
+  "frame": 327,
+  "t": 10.9,
+  "sound": "bookFlip2.ogg",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.24
+ },
+ {
+  "frame": 332,
+  "t": 11.067,
+  "sound": "bookFlip1.ogg",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 333,
+  "t": 11.1,
+  "sound": "pop-small-in",
+  "gain_db": -20,
+  "sync": "peak",
+  "pitch": 1.2
+ },
+ {
+  "frame": 337,
+  "t": 11.233,
+  "sound": "bookFlip2.ogg",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.08
+ },
+ {
+  "frame": 342,
+  "t": 11.4,
+  "sound": "bookFlip1.ogg",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.16
+ },
+ {
+  "frame": 343,
+  "t": 11.433,
+  "sound": "pop-small-in",
+  "gain_db": -20,
+  "sync": "peak",
+  "pitch": 1.3
+ },
+ {
+  "frame": 347,
+  "t": 11.567,
+  "sound": "bookFlip2.ogg",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.24
+ },
+ {
+  "frame": 352,
+  "t": 11.733,
+  "sound": "impactWood_heavy_001.ogg",
+  "gain_db": -9,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 353,
+  "t": 11.767,
+  "sound": "tone-ding-mid",
+  "gain_db": -18,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 373,
+  "t": 12.433,
+  "sound": "whoosh-medium-hard",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 375,
+  "t": 12.5,
+  "sound": "pop-large-in",
+  "gain_db": -10,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 376,
+  "t": 12.533,
+  "sound": "tone-step-5",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 377,
+  "t": 12.567,
+  "sound": "time-clock-fast",
+  "gain_db": -14,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 384,
+  "t": 12.8,
+  "sound": "footstep_grass_004.ogg",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.05
+ },
+ {
+  "frame": 391,
+  "t": 13.033,
+  "sound": "footstep_grass_001.ogg",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.05
+ },
+ {
+  "frame": 398,
+  "t": 13.267,
+  "sound": "footstep_grass_003.ogg",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.05
+ },
+ {
+  "frame": 362,
+  "t": 12.067,
+  "sound": "riser-2s-strong",
+  "gain_db": -13,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 420,
+  "t": 14.0,
+  "sound": "cinematic-slam-massive",
+  "gain_db": -3,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 420,
+  "t": 14.0,
+  "sound": "impactPunch_heavy_000.ogg",
+  "gain_db": -6,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 420,
+  "t": 14.0,
+  "sound": "impactWood_heavy_000.ogg",
+  "gain_db": -5,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 420,
+  "t": 14.0,
+  "sound": "boom-hit-strong",
+  "gain_db": -7,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 421,
+  "t": 14.033,
+  "sound": "bass-rumble-long",
+  "gain_db": -10,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 423,
+  "t": 14.1,
+  "sound": "creak1.ogg",
+  "gain_db": -8,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 428,
+  "t": 14.267,
+  "sound": "whoosh-slow-hard",
+  "gain_db": -11,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 434,
+  "t": 14.467,
+  "sound": "impactWood_heavy_002.ogg",
+  "gain_db": -9,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 440,
+  "t": 14.667,
+  "sound": "impactWood_light_000.ogg",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 0.95
+ },
+ {
+  "frame": 446,
+  "t": 14.867,
+  "sound": "impactWood_light_001.ogg",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.01
+ },
+ {
+  "frame": 451,
+  "t": 15.033,
+  "sound": "impactWood_light_002.ogg",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0699999999999998
+ },
+ {
+  "frame": 457,
+  "t": 15.233,
+  "sound": "impactWood_light_003.ogg",
+  "gain_db": -17,
+  "sync": "peak",
+  "pitch": 1.13
+ },
+ {
+  "frame": 462,
+  "t": 15.4,
+  "sound": "impactWood_light_004.ogg",
+  "gain_db": -18,
+  "sync": "peak",
+  "pitch": 1.19
+ },
+ {
+  "frame": 468,
+  "t": 15.6,
+  "sound": "impactWood_light_000.ogg",
+  "gain_db": -19,
+  "sync": "peak",
+  "pitch": 1.25
+ },
+ {
+  "frame": 444,
+  "t": 14.8,
+  "sound": "appear-burst",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 445,
+  "t": 14.833,
+  "sound": "cloth2.ogg",
+  "gain_db": -10,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 447,
+  "t": 14.9,
+  "sound": "bookFlip2.ogg",
+  "gain_db": -13,
+  "sync": "peak",
+  "pitch": 0.85
+ },
+ {
+  "frame": 468,
+  "t": 15.6,
+  "sound": "whoosh-slow-medium",
+  "gain_db": -14,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 470,
+  "t": 15.667,
+  "sound": "shimmer-long-soft",
+  "gain_db": -17,
+  "sync": "start",
+  "pitch": 1.0
+ },
+ {
+  "frame": 503,
+  "t": 16.767,
+  "sound": "whoosh-fast-medium",
+  "gain_db": -12,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 513,
+  "t": 17.1,
+  "sound": "pop-large-in",
+  "gain_db": -9,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 513,
+  "t": 17.1,
+  "sound": "boom-drop-soft",
+  "gain_db": -15,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 523,
+  "t": 17.433,
+  "sound": "tone-ding-high",
+  "gain_db": -16,
+  "sync": "peak",
+  "pitch": 1.0
+ },
+ {
+  "frame": 527,
+  "t": 17.567,
+  "sound": "sting-playful-short",
+  "gain_db": -13,
+  "sync": "start",
+  "pitch": 1.0
+ }
+]
