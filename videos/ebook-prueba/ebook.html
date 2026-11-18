@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Validá antes de construir</title>
+<style>
+@page{size:A4;margin:0}
+:root{--ink:#14213d;--acc:#ff6b35;--mint:#2ec4b6;--sun:#ffd166;--bg:#fffaf3;--soft:#f1ebe0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,'DejaVu Sans',sans-serif;color:var(--ink);background:#fff}
+.page{width:210mm;height:297mm;padding:18mm 17mm;position:relative;overflow:hidden;page-break-after:always;background:var(--bg)}
+h1{font-size:44pt;line-height:1;margin:0;font-weight:900;letter-spacing:-1.5px}
+h2{font-size:24pt;margin:0 0 4mm;font-weight:900;letter-spacing:-.5px}
+h3{font-size:13pt;margin:0 0 2mm;font-weight:800}
+p{font-size:11pt;line-height:1.55;margin:0 0 3.5mm}
+.tag{display:inline-block;background:var(--ink);color:#fff;font-weight:800;font-size:9pt;padding:1.5mm 4mm;border-radius:20px;letter-spacing:1px}
+.num{position:absolute;bottom:10mm;right:17mm;font-size:9pt;color:#8a8372;font-weight:700}
+.foot{position:absolute;bottom:10mm;left:17mm;font-size:9pt;color:#8a8372;font-weight:700}
+.box{border:3px solid var(--ink);border-radius:14px;padding:5mm;background:#fff;box-shadow:5px 5px 0 var(--ink)}
+.tip{background:var(--sun);border:3px solid var(--ink);border-radius:14px;padding:4mm 5mm;box-shadow:5px 5px 0 var(--ink);margin:5mm 0}
+.tip b{font-size:10pt;letter-spacing:1px}
+.grid{display:grid;gap:5mm}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}
+.step{display:flex;gap:4mm;align-items:flex-start;margin-bottom:4mm}
+.step .n{flex:none;width:11mm;height:11mm;border-radius:50%;background:var(--acc);color:#fff;font-weight:900;font-size:14pt;display:flex;align-items:center;justify-content:center;border:3px solid var(--ink)}
+.chk{display:flex;gap:3mm;align-items:center;font-size:11pt;margin:3mm 0}
+.chk i{flex:none;width:6mm;height:6mm;border:3px solid var(--ink);border-radius:3px;background:#fff}
+.cover{background:var(--ink);color:#fff;padding:22mm 20mm}
+.cover .tag{background:var(--acc)}
+.cover h1 span{color:var(--sun)}
+.fill{border-bottom:2px dashed #b9b2a2;height:8mm;margin-bottom:2mm}
+.small{font-size:9.5pt;color:#5c5648}
+</style></head><body>
+
+<!-- PORTADA -->
+<section class="page cover">
+  <span class="tag">CAPÍTULO DE MUESTRA</span>
+  <h1 style="margin-top:12mm">Validá<br>antes de<br><span>construir</span></h1>
+  <p style="font-size:14pt;margin-top:8mm;max-width:120mm;color:#d8dcea">Cómo saber si alguien pagaría por tu producto digital, antes de gastar semanas en hacerlo.</p>
+  <svg viewBox="0 0 420 300" style="position:absolute;right:8mm;bottom:22mm;width:150mm">
+    <ellipse cx="210" cy="270" rx="170" ry="16" fill="#0c1730"/>
+    <!-- cohete -->
+    <g transform="translate(250,60) rotate(18)">
+      <path d="M0 0 C40 30 40 110 0 160 C-40 110 -40 30 0 0Z" fill="#fff" stroke="#fff" stroke-width="3"/>
+      <circle cx="0" cy="62" r="17" fill="#2ec4b6" stroke="#14213d" stroke-width="5"/>
+      <path d="M-34 110 L-62 150 L-30 138Z M34 110 L62 150 L30 138Z" fill="#ff6b35"/>
+      <path d="M-14 160 Q0 215 14 160Z" fill="#ffd166"/>
+    </g>
+    <!-- lupa -->
+    <g transform="translate(95,150)"><circle cx="40" cy="40" r="42" fill="#2ec4b633" stroke="#ffd166" stroke-width="9"/><path d="M72 74 L110 114" stroke="#ffd166" stroke-width="12" stroke-linecap="round"/><path d="M22 32 Q32 18 48 18" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+    <g fill="#ffd166"><circle cx="60" cy="50" r="5"/><circle cx="350" cy="190" r="6"/><circle cx="170" cy="40" r="4"/></g>
+  </svg>
+  <div class="foot" style="color:#8e97b3">Ejemplo de diseño · contenido de muestra</div>
+</section>
+
+<!-- PÁG 2 -->
+<section class="page">
+  <span class="tag">PRINCIPIO #1</span>
+  <h2 style="margin-top:5mm">El error más caro: construir primero</h2>
+  <p>Mucha gente pasa meses haciendo un producto y recién al terminar descubre que nadie lo quiere. Validar es lo contrario: <b>mostrar la idea antes de que exista</b> y mirar qué hace la gente, no qué dice.</p>
+  <div class="grid g2" style="margin:6mm 0">
+    <div class="box" style="background:#ffe3d9">
+      <h3>❌ El camino largo</h3>
+      <svg viewBox="0 0 240 110" width="100%"><g font-family="sans-serif" font-weight="800" font-size="11" text-anchor="middle">
+        <rect x="4" y="30" width="62" height="40" rx="8" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="35" y="55">Idea</text>
+        <rect x="88" y="30" width="72" height="40" rx="8" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="124" y="55">3 meses</text>
+        <rect x="182" y="30" width="54" height="40" rx="8" fill="#ff6b35" stroke="#14213d" stroke-width="3"/><text x="209" y="55" fill="#fff">¿Venta?</text>
+        <path d="M66 50H88M160 50H182" stroke="#14213d" stroke-width="3"/></g></svg>
+      <p class="small">Si falla, perdiste todo el tiempo.</p></div>
+    <div class="box" style="background:#d9f5f1">
+      <h3>✅ El camino corto</h3>
+      <svg viewBox="0 0 240 110" width="100%"><g font-family="sans-serif" font-weight="800" font-size="11" text-anchor="middle">
+        <rect x="4" y="30" width="54" height="40" rx="8" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="31" y="55">Idea</text>
+        <rect x="76" y="30" width="72" height="40" rx="8" fill="#ffd166" stroke="#14213d" stroke-width="3"/><text x="112" y="55">Probar 1 sem</text>
+        <rect x="166" y="30" width="70" height="40" rx="8" fill="#2ec4b6" stroke="#14213d" stroke-width="3"/><text x="201" y="55">¿Seguir?</text>
+        <path d="M58 50H76M148 50H166" stroke="#14213d" stroke-width="3"/></g></svg>
+      <p class="small">Si falla, perdiste una semana, no tres meses.</p></div>
+  </div>
+  <h3>La regla de las 3 señales</h3>
+  <p>Antes de construir buscá que pase <b>al menos una</b> de estas cosas con gente real que no sea tu familia:</p>
+  <div class="grid g3" style="margin-top:3mm">
+    <div class="box"><svg viewBox="0 0 80 60" width="100%"><rect x="12" y="8" width="56" height="40" rx="6" fill="#ffd166" stroke="#14213d" stroke-width="3"/><path d="M12 14L40 34L68 14" fill="none" stroke="#14213d" stroke-width="3"/></svg><h3>Dejan su mail</h3><p class="small">Se anotan a la lista de espera.</p></div>
+    <div class="box"><svg viewBox="0 0 80 60" width="100%"><circle cx="40" cy="30" r="22" fill="#2ec4b6" stroke="#14213d" stroke-width="3"/><path d="M30 31l8 8 14-16" fill="none" stroke="#14213d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Te preguntan el precio</h3><p class="small">Quieren saber cuánto cuesta.</p></div>
+    <div class="box"><svg viewBox="0 0 80 60" width="100%"><rect x="14" y="14" width="52" height="34" rx="6" fill="#ff6b35" stroke="#14213d" stroke-width="3"/><circle cx="40" cy="31" r="9" fill="#fff" stroke="#14213d" stroke-width="3"/></svg><h3>Pagan por adelantado</h3><p class="small">La señal más fuerte.</p></div>
+  </div>
+  <div class="tip"><b>💡 REGLA DE ORO</b><p style="margin:1mm 0 0">Que alguien diga "me gusta tu idea" no cuenta. Cuenta lo que hace: dejar el mail, preguntar el precio o pagar.</p></div>
+  <div class="foot">Validá antes de construir</div><div class="num">2</div>
+</section>
+
+<!-- PÁG 3 -->
+<section class="page">
+  <span class="tag">PASO A PASO</span>
+  <h2 style="margin-top:5mm">Tu prueba de 7 días</h2>
+  <p>No necesitás programar nada. Con una página simple y un anuncio chico alcanza para saber si vale la pena.</p>
+  <div style="margin-top:6mm">
+    <div class="step"><div class="n">1</div><div><h3>Día 1 · Escribí la promesa en una frase</h3><p>"Esto es para [quién] que quiere [resultado] sin [dolor]." Si no entra en una frase, la idea todavía está borrosa.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h3>Día 2 · Armá una página de una sola pantalla</h3><p>Título con la promesa, tres beneficios, un botón. Nada más. Podés hacerla en una tarde.</p></div></div>
+    <div class="step"><div class="n">3</div><div><h3>Días 3–4 · Mostrala a gente real</h3><p>Un video corto o un anuncio con poco presupuesto. Lo que importa es que lo vean personas que no te conocen.</p></div></div>
+    <div class="step"><div class="n">4</div><div><h3>Días 5–6 · Medí</h3><p>¿Cuántos entraron? ¿Cuántos dejaron el mail o hicieron clic en comprar? Anotá los números reales.</p></div></div>
+    <div class="step"><div class="n">5</div><div><h3>Día 7 · Decidí con los números</h3><p>Seguir, cambiar la promesa o descartar. Cualquiera de las tres es una buena decisión si la tomás con datos.</p></div></div>
+  </div>
+  <svg viewBox="0 0 520 120" width="100%" style="margin-top:2mm"><g font-family="sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+    <path d="M10 100 H510" stroke="#14213d" stroke-width="3"/>
+    <rect x="30" y="30" width="60" height="70" rx="6" fill="#ffd166" stroke="#14213d" stroke-width="3"/><text x="60" y="118" font-size="10">Visitas</text><text x="60" y="68">100</text>
+    <rect x="150" y="62" width="60" height="38" rx="6" fill="#2ec4b6" stroke="#14213d" stroke-width="3"/><text x="180" y="118" font-size="10">Mails</text><text x="180" y="86">12</text>
+    <rect x="270" y="84" width="60" height="16" rx="6" fill="#ff6b35" stroke="#14213d" stroke-width="3"/><text x="300" y="118" font-size="10">Pagos</text><text x="300" y="78">3</text>
+    <text x="440" y="60" font-size="11" fill="#5c5648">Ejemplo ilustrativo</text><text x="440" y="76" font-size="11" fill="#5c5648">(no es una promesa)</text></g></svg>
+  <div class="foot">Validá antes de construir</div><div class="num">3</div>
+</section>
+
+<!-- PÁG 4 -->
+<section class="page">
+  <span class="tag">HERRAMIENTA</span>
+  <h2 style="margin-top:5mm">Tu hoja de decisión</h2>
+  <p>Completala al final de la semana. Imprimila o escribí sobre el PDF.</p>
+  <div class="box" style="margin:5mm 0">
+    <h3>1. Mi promesa en una frase</h3><div class="fill"></div><div class="fill"></div>
+    <h3 style="margin-top:4mm">2. Mis números reales</h3>
+    <div class="grid g3" style="margin-top:2mm">
+      <div><p class="small">Visitas</p><div class="fill"></div></div>
+      <div><p class="small">Dejaron mail</p><div class="fill"></div></div>
+      <div><p class="small">Pagaron</p><div class="fill"></div></div>
+    </div>
+  </div>
+  <h3>3. Marcá lo que pasó</h3>
+  <div class="chk"><i></i>Alguien que no conozco dejó su mail</div>
+  <div class="chk"><i></i>Alguien me preguntó el precio</div>
+  <div class="chk"><i></i>Alguien pagó o reservó</div>
+  <div class="chk"><i></i>Recibí la misma objeción más de una vez</div>
+  <div class="grid g3" style="margin-top:7mm">
+    <div class="box" style="background:#d9f5f1"><h3>0–1 marcas</h3><p class="small">Cambiá la promesa o el público y probá otra semana.</p></div>
+    <div class="box" style="background:#fff3cf"><h3>2 marcas</h3><p class="small">Hay interés. Probá con más gente antes de construir.</p></div>
+    <div class="box" style="background:#ffe3d9"><h3>3–4 marcas</h3><p class="small">Buena señal. Construí una primera versión simple.</p></div>
+  </div>
+  <div class="tip"><b>⚠️ OJO</b><p style="margin:1mm 0 0">Pocos números no son una conclusión definitiva. Son una pista barata para decidir mejor qué hacer con tu tiempo y tu plata.</p></div>
+  <p class="small">Esto es contenido de muestra para ver el estilo y el formato del ebook. No promete resultados.</p>
+  <div class="foot">Validá antes de construir</div><div class="num">4</div>
+</section>
+</body></html>
