@@ -1,0 +1,592 @@
+/*!
+ * voxel-kit.js — blocky / voxel scenes and animations with three.js (r128)
+ * Part of the "voxel-animations" skill · MIT License · (c) 2026 normix
+ *
+ * Everything here is original: textures are generated procedurally at runtime,
+ * the character is an original design. No game assets are used or needed.
+ *
+ * Usage (needs THREE as a global, e.g. three.js r128 from cdnjs):
+ *   const app = VK.createApp({ title: 'MY SCENE', sky: 'day' });
+ *   const world = VK.island(app, { seed: 7 });
+ *   const hero = VK.character(app, { ground: world.groundTopAt });
+ *   app.onUpdate(dt => { ... });
+ *   app.start();
+ */
+(function (global) {
+  'use strict';
+  const VK = {};
+  const THREE = global.THREE;
+  const V3 = THREE.Vector3;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  VK.clamp = clamp;
+
+  // ------------------------------------------------------------------ random
+  VK.rng = function (a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  };
+  VK.noise2 = function (seed) {
+    const h = (i, j) => { const s = Math.sin(i * 127.1 + j * 311.7 + seed * 17.13) * 43758.5453; return s - Math.floor(s); };
+    return function (x, z) {
+      const i = Math.floor(x), j = Math.floor(z), fx = x - i, fz = z - j;
+      const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+      const a = h(i, j), b = h(i + 1, j), c = h(i, j + 1), d = h(i + 1, j + 1);
+      return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+    };
+  };
+  VK.ease = {
+    outBack: t => { const c = 1.9; t -= 1; return 1 + (c + 1) * t * t * t + c * t * t; },
+    inOut: t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+    out: t => 1 - Math.pow(1 - t, 3),
+  };
+
+  // ------------------------------------------------------------------ URL params
+  // ?clean  hide UI · ?alpha transparent background · ?capture frame-exact mode
+  // ?fps=30 capture frame rate · ?seed=7 · ?speed=2 · ?night
+  const q = new URLSearchParams(global.location ? global.location.search : '');
+  VK.params = {
+    clean: q.has('clean'), alpha: q.has('alpha'), capture: q.has('capture'),
+    fps: +(q.get('fps') || 30), seed: q.has('seed') ? +q.get('seed') : null,
+    speed: q.has('speed') ? +q.get('speed') : null, night: q.has('night'),
+  };
+
+  // ------------------------------------------------------------------ pixel-art textures
+  const C = (b, k = 1) => `rgb(${clamp(b[0] * k | 0, 0, 255)},${clamp(b[1] * k | 0, 0, 255)},${clamp(b[2] * k | 0, 0, 255)})`;
+  const dot = (g, x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
+  function fillNoise(g, r, base, v, w = 16, h = 16) {
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) dot(g, x, y, C(base, 1 + (r() - .5) * v));
+  }
+  function tex(seed, draw, w = 16, h = 16) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); draw(g, VK.rng(seed), w, h);
+    const t = new THREE.CanvasTexture(c);
+    t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+    return t;
+  }
+  VK.tex = tex; VK.C = C; VK.dot = dot; VK.fillNoise = fillNoise;
+  const hexRGB = hex => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255];
+
+  function drawDirt(g, r) {
+    fillNoise(g, r, [134, 96, 67], .3);
+    for (let i = 0; i < 18; i++) dot(g, r() * 16 | 0, r() * 16 | 0, C(r() < .5 ? [96, 68, 46] : [162, 122, 90]));
+  }
+  function drawPlanks(g, r, base) {
+    for (let y = 0; y < 16; y++) {
+      const board = y >> 2, seam = board % 2 ? 4 : 12;
+      for (let x = 0; x < 16; x++) {
+        let k = 1 + (r() - .5) * .14;
+        if (y % 4 === 3 || x === seam) k = .66; else if (r() < .08) k *= .86;
+        dot(g, x, y, C(base, k));
+      }
+    }
+  }
+  function drawBricks(g, r, base, mortar) {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+      const row = y >> 2, off = row % 2 ? 4 : 0;
+      const isM = y % 4 === 3 || (x + off) % 8 === 7;
+      dot(g, x, y, isM ? C(mortar, 1 + (r() - .5) * .1) : C(base, 1 + (r() - .5) * .2));
+    }
+  }
+
+  const TEX = {}; // built lazily, shared by every app on the page
+  function buildTextures() {
+    if (TEX.ready) return TEX;
+    TEX.grassTop = tex(1, (g, r) => { fillNoise(g, r, [96, 160, 56], .35); for (let i = 0; i < 14; i++) dot(g, r() * 16 | 0, r() * 16 | 0, C([70, 124, 40])); });
+    TEX.dirt = tex(2, drawDirt);
+    TEX.grassSide = tex(3, (g, r) => { drawDirt(g, r); for (let x = 0; x < 16; x++) { const d = 3 + (r() < .5) + (r() < .3); for (let y = 0; y < d; y++) dot(g, x, y, C([96, 160, 56], 1 + (r() - .5) * .3)); } });
+    TEX.stone = tex(4, (g, r) => { fillNoise(g, r, [128, 128, 128], .18); for (let i = 0; i < 7; i++) { let x = r() * 16 | 0, y = r() * 16 | 0; const n = 2 + r() * 3 | 0; for (let k = 0; k < n; k++) { dot(g, (x + k) % 16, y, C([90, 90, 90])); if (r() < .4) y = (y + 1) % 16; } } });
+    TEX.sand = tex(5, (g, r) => { fillNoise(g, r, [206, 190, 138], .12); for (let i = 0; i < 10; i++) dot(g, r() * 16 | 0, r() * 16 | 0, C([180, 164, 116])); });
+    TEX.planks = tex(6, (g, r) => drawPlanks(g, r, [168, 134, 80]));
+    TEX.roof = tex(7, (g, r) => drawPlanks(g, r, [112, 80, 52]));
+    TEX.logSide = tex(8, (g, r) => { const cols = []; for (let x = 0; x < 16; x++) cols.push(.78 + r() * .36); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) dot(g, x, y, C([104, 82, 50], cols[x] * (1 + (r() - .5) * .12))); });
+    TEX.logTop = tex(9, (g, r) => { for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const d = Math.max(Math.abs(x - 7.5), Math.abs(y - 7.5)); const b = d > 6.5 ? [104, 82, 50] : (Math.floor(d) % 2 ? [172, 138, 86] : [148, 114, 68]); dot(g, x, y, C(b, 1 + (r() - .5) * .12)); } });
+    TEX.leaves = tex(10, (g, r) => { for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { if (r() < .16) continue; dot(g, x, y, C([58, 128, 40], 1 + (r() - .5) * .55)); } });
+    TEX.glass = tex(11, g => {
+      g.fillStyle = 'rgba(190,225,255,0.16)'; g.fillRect(0, 0, 16, 16); g.fillStyle = 'rgba(236,248,255,0.95)';
+      g.fillRect(0, 0, 16, 1); g.fillRect(0, 15, 16, 1); g.fillRect(0, 0, 1, 16); g.fillRect(15, 0, 1, 16);
+      g.fillStyle = 'rgba(255,255,255,0.8)'; [[3, 4], [4, 3], [5, 2], [10, 12], [11, 11], [12, 10], [11, 12]].forEach(([x, y]) => g.fillRect(x, y, 1, 1));
+    });
+    TEX.water = tex(12, (g, r) => { fillNoise(g, r, [52, 102, 214], .12); for (let i = 0; i < 8; i++) { const x = r() * 14 | 0, y = r() * 16 | 0; dot(g, x, y, C([120, 170, 240])); dot(g, x + 1, y, C([120, 170, 240])); } });
+    TEX.water.wrapS = TEX.water.wrapT = THREE.RepeatWrapping;
+    TEX.ice = tex(13, (g, r) => { fillNoise(g, r, [150, 196, 250], .1); for (let i = 0; i < 6; i++) { const x = r() * 12 | 0, y = r() * 12 | 0; for (let k = 0; k < 4; k++) dot(g, x + k, y + k, 'rgba(240,250,255,.9)'); } });
+    TEX.snow = tex(14, (g, r) => fillNoise(g, r, [240, 246, 252], .06));
+    TEX.cobble = tex(15, (g, r) => { fillNoise(g, r, [118, 118, 118], .12); for (let i = 0; i < 9; i++) { const x = r() * 14 | 0, y = r() * 14 | 0, s = 2 + (r() * 3 | 0); for (let a = 0; a < s; a++) { dot(g, x + a, y, C([80, 80, 80])); dot(g, x, y + a, C([80, 80, 80])); dot(g, x + a, y + s, C([150, 150, 150])); } } });
+    TEX.brick = tex(16, (g, r) => drawBricks(g, r, [156, 74, 56], [180, 172, 160]));
+    TEX.lava = tex(17, (g, r) => { fillNoise(g, r, [230, 100, 20], .35); for (let i = 0; i < 12; i++) dot(g, r() * 16 | 0, r() * 16 | 0, C([255, 210, 80])); });
+    TEX.lava.wrapS = TEX.lava.wrapT = THREE.RepeatWrapping;
+    TEX.sun = tex(30, g => { g.fillStyle = '#ffd23a'; g.fillRect(0, 0, 16, 16); g.fillStyle = '#fff3a6'; g.fillRect(3, 3, 10, 10); });
+    TEX.moon = tex(31, (g, r) => { fillNoise(g, r, [214, 218, 226], .1); [[4, 5], [5, 5], [10, 9], [9, 11]].forEach(([x, y]) => dot(g, x, y, '#a9adb8')); });
+    TEX.ready = true;
+    return TEX;
+  }
+  VK.textures = buildTextures;
+
+  // ------------------------------------------------------------------ materials
+  const L = (map, o = {}) => new THREE.MeshLambertMaterial(Object.assign({ map }, o));
+  VK.materials = function () {
+    const T = buildTextures();
+    return {
+      grass: [L(T.grassSide), L(T.grassSide), L(T.grassTop), L(T.dirt), L(T.grassSide), L(T.grassSide)],
+      dirt: L(T.dirt), stone: L(T.stone), sand: L(T.sand), planks: L(T.planks), roof: L(T.roof),
+      log: [L(T.logSide), L(T.logSide), L(T.logTop), L(T.logTop), L(T.logSide), L(T.logSide)],
+      leaves: L(T.leaves, { alphaTest: .5, side: THREE.DoubleSide }),
+      glass: L(T.glass, { transparent: true }),
+      water: L(T.water, { transparent: true, opacity: .78 }),
+      ice: L(T.ice, { transparent: true, opacity: .88 }),
+      snow: L(T.snow), cobble: L(T.cobble), brick: L(T.brick),
+      lava: new THREE.MeshBasicMaterial({ map: T.lava }),
+    };
+  };
+  /** A flat coloured block with pixel noise (atoms, charts, particles, signs…). */
+  const solidCache = {};
+  VK.solid = function (hex, opts = {}) {
+    const key = hex + JSON.stringify(opts);
+    if (solidCache[key]) return solidCache[key];
+    const base = hexRGB(hex);
+    const t = tex(hex % 9973, (g, r) => {
+      fillNoise(g, r, base, opts.noise ?? .14);
+      if (opts.border !== false) { g.fillStyle = C(base, .78); g.fillRect(0, 15, 16, 1); g.fillRect(15, 0, 1, 16); g.fillStyle = C(base, 1.15); g.fillRect(0, 0, 16, 1); g.fillRect(0, 0, 1, 16); }
+    });
+    const m = opts.glow ? new THREE.MeshBasicMaterial({ map: t }) : L(t, opts.opacity ? { transparent: true, opacity: opts.opacity } : {});
+    return (solidCache[key] = m);
+  };
+  VK.BOX = new THREE.BoxGeometry(1, 1, 1);
+  VK.first = m => Array.isArray(m) ? m[0] : m;
+
+  /** Many identical blocks in one draw call. list = [[x,y,z], ...] */
+  VK.instanced = function (scene, mat, list, { cast = true, size = 1 } = {}) {
+    if (!list.length) return null;
+    const geo = size === 1 ? VK.BOX : new THREE.BoxGeometry(size, size, size);
+    const m = new THREE.InstancedMesh(geo, mat, list.length), d = new THREE.Object3D();
+    list.forEach((p, i) => { d.position.set(p[0], p[1], p[2]); d.updateMatrix(); m.setMatrixAt(i, d.matrix); });
+    m.castShadow = cast; m.receiveShadow = true; scene.add(m); return m;
+  };
+  /** One block as its own mesh (use for anything that moves or pops in). */
+  VK.block = function (app, type, x, y, z, { pop = false } = {}) {
+    const mat = typeof type === 'string' ? app.M[type] : type;
+    const o = new THREE.Mesh(VK.BOX, mat); o.castShadow = true; o.receiveShadow = true;
+    o.position.set(x, y, z); o.userData.type = type; app.scene.add(o);
+    if (pop) app.pop(o);
+    return o;
+  };
+
+  // ------------------------------------------------------------------ app
+  VK.createApp = function (opts = {}) {
+    const P = VK.params;
+    const app = {
+      params: P, alpha: P.alpha || !!opts.alpha, time: 0,
+      speed: P.speed ?? (opts.speed || 1), paused: false,
+      rand: VK.rng((P.seed ?? opts.seed ?? 7) * 9301 + 49297),
+      updaters: [], torches: [], nightF: 0,
+    };
+    const R = app.rand;
+    document.body.style.margin = '0'; document.body.style.overflow = 'hidden';
+    if (app.alpha) document.body.style.background = 'transparent';
+
+    // renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: app.alpha, preserveDrawingBuffer: P.capture });
+    renderer.setPixelRatio(P.capture ? 1 : Math.min(global.devicePixelRatio || 1, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+    if (app.alpha) renderer.setClearColor(0x000000, 0);
+    renderer.domElement.style.display = 'block'; renderer.domElement.style.touchAction = 'none';
+    document.body.prepend(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(opts.fov || 45, innerWidth / innerHeight, .1, 400);
+    Object.assign(app, { renderer, scene, camera, M: VK.materials() });
+
+    // ---------------- sky & light. sky: 'day' | 'studio' | 'night'
+    const skyMode = opts.sky || 'day';
+    const skyCol = new THREE.Color(skyMode === 'studio' ? (opts.studioColor ?? 0x1d2433) : 0x87c3ff);
+    if (!app.alpha) { scene.background = skyCol; if (skyMode !== 'studio') scene.fog = new THREE.Fog(skyCol, opts.fogNear || 45, opts.fogFar || 95); }
+    const hemi = new THREE.HemisphereLight(0xd6ecff, 0x5a4a30, .6); scene.add(hemi);
+    const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true;
+    const sh = opts.shadowSize || 28;
+    sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -sh, right: sh, top: sh, bottom: -sh, near: 1, far: 160 });
+    sun.shadow.bias = -0.0006; scene.add(sun, sun.target);
+    app.sun = sun; app.hemi = hemi;
+    const sky = { tod: P.night || skyMode === 'night' ? .78 : (opts.tod ?? .27), cycle: !!opts.cycle, period: opts.dayLength || 48 };
+    app.sky = sky;
+    let sunMesh, moonMesh, starMat, clouds = [];
+    const T = buildTextures();
+    if (!app.alpha && skyMode !== 'studio') {
+      sunMesh = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({ map: T.sun, fog: false }));
+      moonMesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.MeshBasicMaterial({ map: T.moon, fog: false }));
+      scene.add(sunMesh, moonMesh);
+      const sp = [], rs = VK.rng(5);
+      for (let i = 0; i < 600; i++) { const th = rs() * Math.PI * 2, ph = Math.acos(rs() * .95); sp.push(Math.sin(ph) * Math.cos(th) * 150, Math.cos(ph) * 150, Math.sin(ph) * Math.sin(th) * 150); }
+      const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+      starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, transparent: true, opacity: 0, fog: false });
+      scene.add(new THREE.Points(sg, starMat));
+      if (opts.clouds !== false) {
+        const cm = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: .9 }), rc = VK.rng(42);
+        for (let i = 0; i < 9; i++) {
+          const g = new THREE.Group(), n = 2 + (rc() * 3 | 0);
+          for (let k = 0; k < n; k++) { const b = new THREE.Mesh(VK.BOX, cm); b.scale.set(3 + rc() * 5, 1, 2 + rc() * 3); b.position.set((rc() - .5) * 5, 0, (rc() - .5) * 3); b.castShadow = true; g.add(b); }
+          g.position.set((rc() * 2 - 1) * 45, 22 + rc() * 4, (rc() * 2 - 1) * 30); scene.add(g); clouds.push(g);
+        }
+      }
+    }
+    const cNight = new THREE.Color(0x0b1026), cDay = new THREE.Color(0x87c3ff), cSet = new THREE.Color(0xf29a5c),
+      cWarm = new THREE.Color(0xffc48a), cWhite = new THREE.Color(0xffffff), cMoon = new THREE.Color(0x8ea8ff);
+    function updateSky() {
+      const a = sky.tod * Math.PI * 2, s = Math.sin(a), dir = new V3(Math.cos(a), s, .35).normalize();
+      const dayF = skyMode === 'studio' ? 1 : clamp((s + .1) / .35, 0, 1);
+      app.nightF = 1 - dayF;
+      if (skyMode !== 'studio') {
+        skyCol.copy(cNight).lerp(cDay, dayF).lerp(cSet, .6 * Math.exp(-s * s / .012));
+        if (scene.fog) scene.fog.color.copy(skyCol);
+      }
+      if (skyMode === 'studio') { sun.position.set(14, 26, 18); sun.intensity = .95; sun.color.copy(cWhite); }
+      else if (s >= 0) { sun.position.copy(dir).multiplyScalar(60); sun.intensity = Math.min(1, s * 3); sun.color.copy(cWarm).lerp(cWhite, Math.min(1, s * 2.2)); }
+      else { sun.position.copy(dir).multiplyScalar(-60); sun.intensity = .24 * Math.min(1, -s * 3); sun.color.copy(cMoon); }
+      hemi.intensity = .16 + .5 * dayF;
+      if (starMat) starMat.opacity = app.nightF;
+      if (sunMesh) { sunMesh.position.copy(dir).multiplyScalar(110); moonMesh.position.copy(dir).multiplyScalar(-110); sunMesh.lookAt(camera.position); moonMesh.lookAt(camera.position); }
+      app.torches.forEach(l => l.intensity = .25 + 1.6 * app.nightF);
+    }
+
+    // ---------------- orbit camera (auto-rotate, drag, wheel)
+    const cam = app.cam = Object.assign({ theta: .75, phi: .55, radius: 34, target: new V3(0, 2.5, 0), auto: true, autoSpeed: .07 }, opts.camera || {});
+    if (!(cam.target instanceof V3)) cam.target = new V3(...cam.target);
+    let drag = null, lastInteract = -10;
+    const cv = renderer.domElement;
+    cv.style.cursor = 'grab';
+    cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove', e => {
+      if (!drag) return;
+      cam.theta -= (e.clientX - drag.x) * .006; cam.phi = clamp(cam.phi + (e.clientY - drag.y) * .004, .05, 1.4);
+      drag = { x: e.clientX, y: e.clientY }; lastInteract = performance.now() / 1000;
+    });
+    cv.addEventListener('pointerup', () => drag = null);
+    cv.addEventListener('wheel', e => { e.preventDefault(); cam.radius = clamp(cam.radius * (1 + Math.sign(e.deltaY) * .08), 4, 80); lastInteract = performance.now() / 1000; }, { passive: false });
+    function updateCamera(dt) {
+      if (cam.auto && !drag && (P.capture || performance.now() / 1000 - lastInteract > 3)) cam.theta += dt * cam.autoSpeed;
+      const t = cam.target;
+      camera.position.set(t.x + cam.radius * Math.cos(cam.phi) * Math.sin(cam.theta), t.y + cam.radius * Math.sin(cam.phi), t.z + cam.radius * Math.cos(cam.phi) * Math.cos(cam.theta));
+      camera.lookAt(t);
+    }
+    app.updateCamera = updateCamera;
+
+    // ---------------- particles & pop-in
+    const PBOX = new THREE.BoxGeometry(.14, .14, .14), parts = [], pops = [];
+    app.puff = function (pos, mat, n = 7, power = 2.4, spread = .9) {
+      mat = VK.first(typeof mat === 'string' ? app.M[mat] : mat);
+      for (let i = 0; i < n; i++) {
+        if (parts.length > 500) return;
+        const m = new THREE.Mesh(PBOX, mat);
+        m.position.set(pos.x + (R() - .5) * spread, pos.y + (R() - .5) * spread, pos.z + (R() - .5) * spread);
+        scene.add(m);
+        const life = .5 + R() * .5;
+        parts.push({ m, v: new V3((R() - .5) * power, R() * power + 1, (R() - .5) * power), life, max: life });
+      }
+    };
+    app.pop = function (obj, dur = .22, puff = true) {
+      obj.scale.setScalar(.001); pops.push({ obj, t: 0, dur });
+      if (puff && obj.material) app.puff(obj.position, obj.material);
+    };
+    app.clearParticles = () => { parts.forEach(p => scene.remove(p.m)); parts.length = 0; };
+
+    app.onUpdate = fn => { app.updaters.push(fn); return app; };
+
+    function step(dt) {
+      app.time += dt;
+      for (const fn of app.updaters) fn(dt, app.time);
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i]; p.life -= dt; p.v.y -= 18 * dt; p.m.position.addScaledVector(p.v, dt);
+        p.m.scale.setScalar(Math.max(.01, p.life / p.max));
+        if (p.life <= 0) { scene.remove(p.m); parts.splice(i, 1); }
+      }
+      for (let i = pops.length - 1; i >= 0; i--) {
+        const p = pops[i]; p.t += dt; const k = Math.min(1, p.t / p.dur);
+        p.obj.scale.setScalar(Math.max(.001, VK.ease.outBack(k))); if (k >= 1) pops.splice(i, 1);
+      }
+      if (sky.cycle) sky.tod = (sky.tod + dt / sky.period) % 1;
+      T.water.offset.x = (app.time * .03) % 1; T.lava.offset.y = (app.time * .02) % 1;
+      for (const c of clouds) { c.position.x += dt * 1.1; if (c.position.x > 50) c.position.x = -50; }
+    }
+
+    // ---------------- UI (title, counter, buttons, hint). Hidden with ?clean or key H.
+    const hud = document.createElement('div');
+    hud.innerHTML = `<style>
+      .vk-hud{position:fixed;inset:0;pointer-events:none;font-family:'Press Start 2P',monospace}
+      .vk-title{position:absolute;top:16px;left:16px;color:#fff;text-shadow:3px 3px 0 #33333399;font-size:14px;line-height:1.8}
+      .vk-title small{display:block;font-size:8px;opacity:.9}
+      .vk-status{position:absolute;top:18px;right:16px;color:#fff;text-shadow:2px 2px 0 #33333399;font-size:10px;text-align:right;line-height:1.8}
+      .vk-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;pointer-events:auto;width:max-content;max-width:96vw}
+      .vk-bar button{font-family:inherit;font-size:9px;color:#fff;background:#7d7d7d;border:none;padding:11px 12px;cursor:pointer;box-shadow:inset -3px -3px 0 #4d4d4d,inset 3px 3px 0 #ababab,0 0 0 2px #1d1d1d;text-shadow:1px 1px 0 #3a3a3a}
+      .vk-bar button:hover{background:#8a98c8;box-shadow:inset -3px -3px 0 #59639a,inset 3px 3px 0 #bac5ef,0 0 0 2px #1d1d1d}
+      .vk-bar button.on{background:#5e9c3b;box-shadow:inset -3px -3px 0 #3c6b23,inset 3px 3px 0 #8cc865,0 0 0 2px #1d1d1d}
+      .vk-bar button.rec{background:#b8332b;box-shadow:inset -3px -3px 0 #7c1c16,inset 3px 3px 0 #e46a61,0 0 0 2px #1d1d1d}
+      .vk-hint{position:absolute;bottom:70px;left:0;right:0;text-align:center;color:#fff;font-size:7px;opacity:.85;text-shadow:1px 1px 0 #33333399}
+      body.vk-clean .vk-hud{display:none}</style>
+      <div class="vk-hud"><div class="vk-title"></div><div class="vk-status"></div><div class="vk-hint"></div><div class="vk-bar"></div></div>`;
+    document.body.appendChild(hud);
+    if (!document.querySelector('link[data-vk-font]')) {
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.dataset.vkFont = 1;
+      l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'; document.head.appendChild(l);
+    }
+    const $ = s => hud.querySelector(s);
+    $('.vk-title').innerHTML = (opts.title || '') + (opts.subtitle ? `<small>${opts.subtitle}</small>` : '');
+    $('.vk-hint').textContent = opts.hint ?? 'drag to orbit · wheel to zoom · H hides UI · V records';
+    if (P.clean || P.capture) document.body.classList.add('vk-clean');
+    app.status = txt => { $('.vk-status').innerHTML = txt; };
+    const keys = {};
+    /** app.button({label, key, toggle, on, onClick(state)}) → the button element */
+    app.button = function (b) {
+      const el = document.createElement('button'); el.textContent = b.label;
+      let state = !!b.on; if (b.toggle && state) el.classList.add('on');
+      const fire = () => { if (b.toggle) { state = !state; el.classList.toggle('on', state); } b.onClick && b.onClick(state, el); };
+      el.onclick = fire; $('.vk-bar').appendChild(el);
+      if (b.key) keys[b.key.toLowerCase()] = fire;
+      return el;
+    };
+    app.key = (k, fn) => { keys[k.toLowerCase()] = fn; };
+    addEventListener('keydown', e => {
+      const k = e.key === ' ' ? 'space' : e.key.toLowerCase();
+      if (k === 'h') { document.body.classList.toggle('vk-clean'); return; }
+      if (k === 'v') { app.record(opts.recordSeconds || 10); return; }
+      if (keys[k]) { e.preventDefault(); keys[k](); }
+    });
+    app.standardButtons = function ({ pause = true, speed = true, cycle = skyMode === 'day', camera = true } = {}) {
+      if (pause) app.button({ label: 'PAUSE', key: 'space', toggle: true, onClick: (s, el) => { app.paused = s; el.textContent = s ? 'PLAY' : 'PAUSE'; } });
+      if (speed) app.button({ label: 'SPEED ' + app.speed + 'X', onClick: (s, el) => { app.speed = app.speed === 1 ? 2 : app.speed === 2 ? 4 : 1; el.textContent = 'SPEED ' + app.speed + 'X'; } });
+      if (cycle) app.button({ label: 'DAY/NIGHT', key: 'n', toggle: true, on: sky.cycle, onClick: s => sky.cycle = s });
+      if (camera) app.button({ label: 'AUTO CAM', toggle: true, on: cam.auto, onClick: s => cam.auto = s });
+    };
+
+    // ---------------- quick recorder (real-time, WebM; alpha kept with ?alpha in Chrome)
+    // Works when the .html is opened locally. Hosted previews may block downloads:
+    // for frame-exact video use scripts/render.py instead.
+    app.record = function (seconds = 10) {
+      if (app._rec) return;
+      const stream = cv.captureStream(60);
+      const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => global.MediaRecorder && MediaRecorder.isTypeSupported(m));
+      if (!mime) { app.status('recording not supported here'); return; }
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 16e6 }), chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        app._rec = null;
+        const url = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+        const a = document.createElement('a'); a.href = url; a.download = (opts.fileName || 'voxel-scene') + '.webm';
+        document.body.appendChild(a); a.click(); a.remove();
+      };
+      app._rec = rec; rec.start(); setTimeout(() => rec.stop(), seconds * 1000);
+    };
+
+    // ---------------- loop
+    addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+    function render() { updateSky(); renderer.render(scene, camera); }
+    app.render = render;
+    app.start = function () {
+      updateSky(); updateCamera(0);
+      if (P.capture) {
+        // Frame-exact mode for scripts/render.py: nothing moves until __vk.frame() is called.
+        const dt = 1 / P.fps;
+        global.__vk = { fps: P.fps, frame(n = 1) { for (let i = 0; i < n; i++) { for (let s = 0; s < app.speed; s++) step(dt); updateCamera(dt); } render(); return app.time; }, ready: true };
+        render(); return app;
+      }
+      let last = performance.now();
+      const loop = now => {
+        const dt = Math.min(.05, (now - last) / 1000); last = now;
+        if (!app.paused) for (let s = 0; s < app.speed; s++) step(dt);
+        updateCamera(dt); render(); requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+      return app;
+    };
+    return app;
+  };
+
+  // ------------------------------------------------------------------ island diorama
+  /** Floating terrain with grass, sand, water, stone sides and trees. Returns {hAt, groundTopAt}. */
+  VK.island = function (app, o = {}) {
+    const seed = app.params.seed ?? o.seed ?? 7, R = o.radius ?? 18, WATER = o.water ?? -1, MINY = o.minY ?? -5;
+    const flat = o.flatRadius ?? 7.5, blend = o.blend ?? 3.5, amp = o.amplitude ?? 11;
+    const n = VK.noise2(seed), heights = new Map();
+    for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
+      const v = n(x / 8 + 3.1, z / 8 - 1.7) * .65 + n(x / 3.5 + 9, z / 3.5) * .35;
+      let h = Math.round((v - .42) * amp); const d = Math.hypot(x, z);
+      if (d < flat) h = o.flatHeight ?? 0; else if (d < flat + blend) h = Math.round(h * (d - flat) / blend);
+      heights.set(x + ',' + z, h);
+    }
+    const hAt = (x, z) => (Math.abs(x) > R || Math.abs(z) > R) ? -999 : heights.get(x + ',' + z);
+    const groundTopAt = (x, z) => { const h = hAt(Math.round(x), Math.round(z)); if (h === -999) return -100; return h < WATER ? WATER + .5 : h + .5; };
+    const lists = { grass: [], dirt: [], stone: [], sand: [], water: [], log: [], leaves: [], snow: [] };
+    const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
+      const h = hAt(x, z);
+      for (let y = MINY; y <= h; y++) {
+        if (!(y === h || y === MINY || N4.some(([dx, dz]) => hAt(x + dx, z + dz) < y))) continue;
+        let t;
+        if (y === h) t = h <= WATER ? 'sand' : (o.snowLine != null && h >= o.snowLine ? 'snow' : 'grass');
+        else if (y >= h - 2) t = h <= WATER ? 'sand' : 'dirt'; else t = 'stone';
+        lists[t].push([x, y, z]);
+      }
+      if (h < WATER) for (let y = h + 1; y <= WATER; y++) lists.water.push([x, y, z]);
+    }
+    const rT = VK.rng(seed * 13 + 99), trees = []; let tries = 0;
+    const nTrees = o.trees ?? 10, treeMin = o.treeMinRadius ?? flat + 3;
+    while (trees.length < nTrees && tries < 600) {
+      tries++;
+      const x = Math.round((rT() * 2 - 1) * (R - 2)), z = Math.round((rT() * 2 - 1) * (R - 2));
+      if (Math.hypot(x, z) < treeMin) continue; const h = hAt(x, z); if (h <= WATER) continue;
+      if (trees.some(t => Math.hypot(t[0] - x, t[1] - z) < 4.5)) continue; trees.push([x, z, h]);
+    }
+    trees.forEach(([x, z, h]) => {
+      const th = 4 + (rT() * 2 | 0); for (let y = 1; y <= th; y++) lists.log.push([x, h + y, z]);
+      const top = h + th;
+      for (let dy = -1; dy <= 2; dy++) {
+        const rad = dy <= 0 ? 2 : 1;
+        for (let dx = -rad; dx <= rad; dx++) for (let dz = -rad; dz <= rad; dz++) {
+          if (dx === 0 && dz === 0 && dy <= 0) continue;
+          if (Math.abs(dx) === rad && Math.abs(dz) === rad && (dy >= 1 || rT() < .5)) continue;
+          lists.leaves.push([x + dx, top + dy, z + dz]);
+        }
+      }
+    });
+    ['grass', 'dirt', 'stone', 'sand', 'log', 'leaves', 'snow'].forEach(k => VK.instanced(app.scene, app.M[k], lists[k]));
+    VK.instanced(app.scene, app.M.water, lists.water, { cast: false });
+    return { hAt, groundTopAt, radius: R, water: WATER, trees };
+  };
+
+  /** Flat platform (studio scenes): size×size top at y = top. */
+  VK.platform = function (app, { size = 16, top = .5, depth = 3, mat = 'stone', topMat = null } = {}) {
+    const h = size / 2, list = [], tops = [];
+    for (let x = -h; x < h; x++) for (let z = -h; z < h; z++) for (let d = 0; d < depth; d++) {
+      const edge = x === -h || x === h - 1 || z === -h || z === h - 1;
+      if (d === 0) tops.push([x + .5, top - .5, z + .5]); else if (edge || d === depth - 1) list.push([x + .5, top - .5 - d, z + .5]);
+    }
+    VK.instanced(app.scene, app.M[topMat || mat], tops); VK.instanced(app.scene, app.M[mat], list);
+    return { groundTopAt: (x, z) => (Math.abs(x) < h && Math.abs(z) < h) ? top : -100 };
+  };
+
+  // ------------------------------------------------------------------ character
+  /** Original blocky builder (hard hat, hi-vis vest). Colours are customisable. */
+  VK.character = function (app, o = {}) {
+    const c = Object.assign({ skin: [232, 182, 140], hair: [92, 60, 36], shirt: [236, 120, 32], stripe: [220, 224, 228], pants: [62, 82, 152], boots: [70, 48, 30], hat: 0xf5c518, eyes: [43, 58, 120] }, o.colors || {});
+    const ground = o.ground || (() => .5);
+    const id = (o.seed || 20) * 7;
+    const face = tex(id, (g, r) => { fillNoise(g, r, c.skin, .08, 8, 8); g.fillStyle = C(c.hair); g.fillRect(0, 0, 8, 2); dot(g, 1, 4, '#fff'); dot(g, 2, 4, C(c.eyes)); dot(g, 6, 4, '#fff'); dot(g, 5, 4, C(c.eyes)); g.fillStyle = C([170, 96, 80]); g.fillRect(3, 6, 2, 1); }, 8, 8);
+    const side = tex(id + 1, (g, r) => { fillNoise(g, r, c.skin, .08, 8, 8); g.fillStyle = C(c.hair); g.fillRect(0, 0, 8, 3); }, 8, 8);
+    const back = tex(id + 2, (g, r) => fillNoise(g, r, c.hair, .15, 8, 8), 8, 8);
+    const vest = tex(id + 3, (g, r) => { fillNoise(g, r, c.shirt, .1, 8, 12); g.fillStyle = C(c.stripe); g.fillRect(0, 7, 8, 1); g.fillRect(0, 9, 8, 1); g.fillStyle = C(c.pants); g.fillRect(0, 11, 8, 1); }, 8, 12);
+    const arm = tex(id + 4, (g, r) => { fillNoise(g, r, c.shirt, .1, 4, 12); for (let y = 7; y < 12; y++) for (let x = 0; x < 4; x++) dot(g, x, y, C(c.skin, 1 + (r() - .5) * .08)); }, 4, 12);
+    const leg = tex(id + 5, (g, r) => { fillNoise(g, r, c.pants, .12, 4, 12); for (let y = 9; y < 12; y++) for (let x = 0; x < 4; x++) dot(g, x, y, C(c.boots, 1 + (r() - .5) * .1)); }, 4, 12);
+    const lm = t => new THREE.MeshLambertMaterial({ map: t });
+    const group = new THREE.Group(); app.scene.add(group);
+    const box = (w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.castShadow = true; return me; };
+    const limb = (t, x, y) => { const p = new THREE.Group(); p.position.set(x, y, 0); const m = box(.25, .75, .25, lm(t)); m.position.y = -.375; p.add(m); group.add(p); return p; };
+    const legL = limb(leg, -.125, .75), legR = limb(leg, .125, .75);
+    const body = box(.5, .75, .25, lm(vest)); body.position.y = 1.125; group.add(body);
+    const armL = limb(arm, -.375, 1.5), armR = limb(arm, .375, 1.5);
+    const head = new THREE.Group(); head.position.y = 1.5; group.add(head);
+    const skinM = new THREE.MeshLambertMaterial({ color: new THREE.Color(...c.skin.map(v => v / 255)) });
+    const hm = box(.5, .5, .5, [lm(side), lm(side), lm(back), skinM, lm(face), lm(back)]); hm.position.y = .25; head.add(hm);
+    if (c.hat != null) {
+      const hatM = new THREE.MeshLambertMaterial({ color: c.hat });
+      const hat = box(.56, .16, .56, hatM); hat.position.y = .53; head.add(hat);
+      const brim = box(.6, .04, .7, hatM); brim.position.set(0, .46, .05); head.add(brim);
+    }
+    if (o.scale) group.scale.setScalar(o.scale);
+
+    const ch = {
+      group, legL, legR, armL, armR, head,
+      pos: new V3(...(o.position || [0, 0, 0])), yaw: o.yaw || 0, y: ground(...(o.position ? [o.position[0], o.position[2]] : [0, 0])),
+      path: [], moving: false, walkSpeed: o.walkSpeed || 5, walkPhase: 0, jy: 0, vy: 0, pitch: 0,
+      /** pose: 'idle' | 'reach' | 'cheer' | 'panic' | 'wave' */
+      pose: 'idle', reach: 0, lookTarget: null,
+      goTo(points) { ch.path = points.map(p => p instanceof V3 ? p.clone() : new V3(p[0], 0, p[1] ?? p[2])); },
+      face(x, z, dt) { const t = Math.atan2(x - ch.pos.x, z - ch.pos.z); let d = t - ch.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); ch.yaw += dt ? d * Math.min(1, dt * 14) : d; },
+      jump(v = 6) { if (ch.jy === 0) ch.vy = v; },
+      get arrived() { return ch.path.length === 0; },
+    };
+    function follow(dt) {
+      ch.moving = false; if (!ch.path.length) return;
+      const tg = ch.path[0], dx = tg.x - ch.pos.x, dz = tg.z - ch.pos.z, d = Math.hypot(dx, dz), s = ch.walkSpeed * dt;
+      if (d <= s) { ch.pos.x = tg.x; ch.pos.z = tg.z; ch.path.shift(); ch.walkPhase += d * 2.4; ch.moving = ch.path.length > 0; return; }
+      ch.pos.x += dx / d * s; ch.pos.z += dz / d * s; ch.walkPhase += s * 2.4; ch.face(tg.x, tg.z, dt); ch.moving = true;
+    }
+    app.onUpdate(dt => {
+      follow(dt);
+      if (ch.vy !== 0 || ch.jy > 0) { ch.jy += ch.vy * dt; ch.vy -= 22 * dt; if (ch.jy <= 0) { ch.jy = 0; ch.vy = 0; } }
+      const gy = ground(ch.pos.x, ch.pos.z); ch.y += (gy - ch.y) * Math.min(1, dt * 12);
+      group.position.set(ch.pos.x, ch.y + ch.jy, ch.pos.z); group.rotation.y = ch.yaw;
+      const k = Math.min(1, dt * 12); let la = 0, ra = 0, ll = 0, lr = 0, pitch = 0, az = 0;
+      if (ch.moving) { const s = Math.sin(ch.walkPhase); ll = s * .8; lr = -s * .8; la = -s * .6; ra = s * .6; }
+      if (ch.pose === 'reach') ra = -1.25 - .75 * Math.sin(clamp(ch.reach, 0, 1) * Math.PI);
+      if (ch.pose === 'cheer' && !ch.moving) { la = ra = -2.9; az = .25 * Math.sin(app.time * 10); }
+      if (ch.pose === 'panic') { la = ra = -2.6; az = .5; }
+      if (ch.pose === 'wave' && !ch.moving) { ra = -2.7; az = .35 * Math.sin(app.time * 8); }
+      if (ch.lookTarget) { const t = ch.lookTarget; pitch = clamp(-Math.atan2(t.y - (ch.y + 1.7), Math.hypot(t.x - ch.pos.x, t.z - ch.pos.z)), -1.1, .5); }
+      legL.rotation.x += (ll - legL.rotation.x) * k; legR.rotation.x += (lr - legR.rotation.x) * k;
+      armL.rotation.x += (la - armL.rotation.x) * k; armR.rotation.x += (ra - armR.rotation.x) * k;
+      armL.rotation.z += (-az - armL.rotation.z) * k; armR.rotation.z += (az - armR.rotation.z) * k;
+      ch.pitch += (pitch - ch.pitch) * k; head.rotation.x = ch.pitch;
+    });
+    return ch;
+  };
+
+  // ------------------------------------------------------------------ helpers
+  /** Path from a to b that walks around an axis-aligned box centred at (cx,cz). */
+  VK.routeAround = function (a, b, { halfX, halfZ, cx = 0, cz = 0, margin = 1.7, clearance = .9 }) {
+    const EX = halfX + margin, EZ = halfZ + margin;
+    const hits = (p, q) => { for (let i = 1; i < 20; i++) { const t = i / 20, x = p.x + (q.x - p.x) * t - cx, z = p.z + (q.z - p.z) * t - cz; if (Math.abs(x) < halfX + clearance && Math.abs(z) < halfZ + clearance) return true; } return false; };
+    a = new V3(a.x, 0, a.z); b = new V3(b.x, 0, b.z);
+    if (!hits(a, b)) return [b];
+    const cs = [[EX, EZ], [EX, -EZ], [-EX, -EZ], [-EX, EZ]].map(([x, z]) => new V3(x + cx, 0, z + cz));
+    let best = null, bl = 1e9;
+    for (const c of cs) if (!hits(a, c) && !hits(c, b)) { const l = a.distanceTo(c) + c.distanceTo(b); if (l < bl) { bl = l; best = [c, b]; } }
+    if (best) return best;
+    for (const c1 of cs) for (const c2 of cs) if (c1 !== c2 && !hits(a, c1) && !hits(c1, c2) && !hits(c2, b)) { const l = a.distanceTo(c1) + c1.distanceTo(c2) + c2.distanceTo(b); if (l < bl) { bl = l; best = [c1, c2, b]; } }
+    return best || [b];
+  };
+  /** Point just outside a box, nearest to (x,z): where to stand to work on a block. */
+  VK.standOutside = function (x, z, { halfX, halfZ, cx = 0, cz = 0, margin = 1.7 }) {
+    const EX = halfX + margin, EZ = halfZ + margin; let px = x - cx, pz = z - cz;
+    if (Math.abs(px) < EX && Math.abs(pz) < EZ) { if (EX - Math.abs(px) < EZ - Math.abs(pz)) px = Math.sign(px || 1) * EX; else pz = Math.sign(pz || 1) * EZ; }
+    return new V3(px + cx, 0, pz + cz);
+  };
+
+  /** Blow objects apart with gravity, bounces and a fade. Calls onDone when finished. */
+  VK.explode = function (app, objects, { center = new V3(0, 3, 0), power = 1, ground = () => .5, fadeAt = 3.6, fadeTime = .9, onDone } = {}) {
+    const R = app.rand; let t = 0;
+    objects.forEach(o => {
+      const d = o.position.clone().sub(center); d.y = Math.max(d.y, .3); d.normalize();
+      o.userData.v = d.multiplyScalar((5 + R() * 7) * power).add(new V3(0, (5 + R() * 5) * power, 0));
+      o.userData.av = new V3((R() - .5) * 10, (R() - .5) * 10, (R() - .5) * 10); o.scale.setScalar(1);
+    });
+    for (let i = 0; i < 70 && objects.length; i++) { const o = objects[R() * objects.length | 0]; if (o.material) app.puff(o.position, o.material, 2, 8); }
+    let done = false;
+    app.onUpdate(dt => {
+      if (done) return; t += dt;
+      objects.forEach(o => {
+        const u = o.userData; u.v.y -= 22 * dt; o.position.addScaledVector(u.v, dt);
+        o.rotation.x += u.av.x * dt; o.rotation.y += u.av.y * dt; o.rotation.z += u.av.z * dt;
+        const fl = ground(o.position.x, o.position.z) + .5;
+        if (fl > -50 && o.position.y < fl) { o.position.y = fl; u.v.y = Math.abs(u.v.y) * .3; if (u.v.y < 1.2) u.v.y = 0; u.v.x *= .6; u.v.z *= .6; u.av.multiplyScalar(.55); }
+        if (t > fadeAt) o.scale.setScalar(Math.max(.001, 1 - (t - fadeAt) / fadeTime));
+      });
+      if (t > fadeAt + fadeTime) { done = true; objects.forEach(o => app.scene.remove(o)); onDone && onDone(); }
+    });
+  };
+
+  /** Wall torch with a warm light that gets brighter at night. */
+  VK.torch = function (app, x, y, z, { tilt = .38, rotY = 0 } = {}) {
+    const g = new THREE.Group();
+    const stick = new THREE.Mesh(new THREE.BoxGeometry(.12, .5, .12), new THREE.MeshLambertMaterial({ color: 0x6b4a2b }));
+    const flame = new THREE.Mesh(new THREE.BoxGeometry(.17, .17, .17), new THREE.MeshBasicMaterial({ color: 0xffc23d })); flame.position.y = .3;
+    const l = new THREE.PointLight(0xffa640, .25 + 1.6 * app.nightF, 9, 1.6); l.position.y = .45;
+    g.add(stick, flame, l); g.rotation.order = 'YXZ'; g.rotation.y = rotY; g.rotation.x = tilt; g.position.set(x, y, z);
+    app.scene.add(g); app.torches.push(l);
+    g.userData.dispose = () => { const i = app.torches.indexOf(l); if (i >= 0) app.torches.splice(i, 1); };
+    return g;
+  };
+
+  global.VK = VK;
+})(typeof window !== 'undefined' ? window : this);

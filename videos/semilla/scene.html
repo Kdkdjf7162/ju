@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semilla</title>
+</head>
+<body>
+<script src="three.min.js"></script>
+<script src="voxel-kit.js"></script>
+<script>
+// "Planté una semilla y esperé: 1 SEGUNDO · 1 DÍA · 1 SEMANA · 1 AÑO"
+// Motor: voxel-kit (skill voxel-animations). Todo se calcula por número de cuadro F (30 fps) → render exacto.
+const V3 = THREE.Vector3;
+const FPS = 30, N = 540;
+const T = { seed: 30, sec: 60, face: 112, day: 150, sprout: 195, week: 255, grow: 290, year: 375, erupt: 420, reveal: 470, top: 505 };
+const FREEZE = [T.erupt, T.erupt + 1, T.erupt + 2]; // hit-stop: el mundo se congela 3 cuadros en el impacto
+
+const app = VK.createApp({ sky: 'day', tod: .3, fov: 40, seed: 11, shadowSize: 34, fogNear: 75, fogFar: 170, camera: { auto: false, radius: 8, phi: .2, theta: 1, target: [0, 1, 0] } });
+const world = VK.island(app, { seed: 3, radius: 18, flatRadius: 8.5, trees: 7 });
+
+// ---------------- estado del árbol gigante (define el "piso" del personaje)
+const G = { trunkK: 0, canopyK: 0 };
+const TRUNK_H = 34, CAN_Y = 34.5, CAN_RX = 6.5, CAN_RY = 4;
+function heroGround(x, z) {
+  const base = world.groundTopAt(x, z);
+  if (Math.abs(x) <= 1.6 && Math.abs(z) <= 1.6 && G.trunkK > 0) {
+    if (G.canopyK > .85) return CAN_Y + CAN_RY * G.canopyK + .5;
+    return Math.max(base, .5 + TRUNK_H * G.trunkK);
+  }
+  return base;
+}
+
+// ---------------- personaje (colores propios: camiseta turquesa, pantalón azul)
+const hero = VK.character(app, {
+  ground: heroGround, position: [2.1, 0, .7], walkSpeed: 3.2,
+  colors: { skin: [198, 142, 112], hair: [74, 48, 28], shirt: [0, 168, 168], stripe: [0, 168, 168], pants: [56, 58, 160], boots: [92, 92, 100], hat: null, eyes: [70, 58, 150] },
+});
+hero.face(0, 0);
+const headMesh = hero.head.children[0];
+
+// caras de 8×8 píxeles (se cambia la textura frontal de la cabeza)
+const SK = [198, 142, 112], HAIR = [74, 48, 28];
+function faceTex(kind) {
+  const c = document.createElement('canvas'); c.width = c.height = 8; const g = c.getContext('2d');
+  const r = VK.rng(kind.length * 31 + 5);
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const k = 1 + (r() - .5) * .08; g.fillStyle = `rgb(${SK[0] * k | 0},${SK[1] * k | 0},${SK[2] * k | 0})`; g.fillRect(x, y, 1, 1); }
+  const px = (x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); };
+  g.fillStyle = `rgb(${HAIR})`; g.fillRect(0, 0, 8, 2); px(0, 2, `rgb(${HAIR})`); px(7, 2, `rgb(${HAIR})`);
+  const W = '#ffffff', E = '#463a96', M = '#7a3e2e', D = '#3a1a14';
+  const eyes = () => { px(1, 4, W); px(2, 4, E); px(5, 4, E); px(6, 4, W); };
+  switch (kind) {
+    case 'neutral': eyes(); g.fillStyle = M; g.fillRect(3, 6, 2, 1); break;
+    case 'bored': px(1, 4, E); px(2, 4, E); px(5, 4, E); px(6, 4, E); g.fillStyle = '#5a3a26'; g.fillRect(1, 3, 2, 1); g.fillRect(5, 3, 2, 1); g.fillStyle = M; g.fillRect(2, 6, 4, 1); break;
+    case 'happy': eyes(); px(2, 6, M); px(5, 6, M); g.fillStyle = M; g.fillRect(3, 7, 2, 1); g.fillStyle = '#e07a7a'; px(1, 5, '#e09080'); px(6, 5, '#e09080'); break;
+    case 'shock': px(1, 3, W); px(2, 3, W); px(1, 4, W); px(2, 4, E); px(5, 3, W); px(6, 3, W); px(5, 4, E); px(6, 4, W); g.fillStyle = D; g.fillRect(3, 5, 2, 3); break;
+    case 'smug': px(1, 4, E); px(2, 4, E); g.fillStyle = '#5a3a26'; g.fillRect(1, 3, 2, 1); px(5, 4, E); px(6, 4, W); px(5, 2, '#5a3a26'); px(6, 2, '#5a3a26'); px(3, 6, M); px(4, 6, M); px(5, 5, M); break;
+  }
+  const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; return t;
+}
+const FACES = Object.fromEntries(['neutral', 'bored', 'happy', 'shock', 'smug'].map(k => [k, faceTex(k)]));
+let curFace = '';
+function setFace(k) { if (k === curFace) return; curFace = k; headMesh.material[4].map = FACES[k]; headMesh.material[4].needsUpdate = true; }
+
+// ---------------- tierra arada, semilla, brote, árbol chico
+const soil = VK.block(app, 'dirt', 0, .015, 0); soil.scale.set(1.01, 1, 1.01);
+const SEEDM = VK.solid(0x7a5a2a), STEM = VK.solid(0x4caf3c), LEAF = VK.solid(0x6fd34e);
+let seed = null, sprout = [], small = [];
+// bloque chico: el pop del kit lleva la escala a 1, así que se escala un grupo padre
+function mini(mat, x, y, z, sx, sy = sx, sz = sx, dur = .25) {
+  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.set(sx, sy, sz); app.scene.add(g);
+  const m = new THREE.Mesh(VK.BOX, mat); m.castShadow = true; g.add(m); app.pop(m, dur, false); return g;
+}
+const leafPlan = [];
+for (let y = 4; y <= 7; y++) { const rad = y <= 5 ? 2 : 1; for (let x = -rad; x <= rad; x++) for (let z = -rad; z <= rad; z++) { if (x === 0 && z === 0 && y <= 5) continue; if (Math.abs(x) === rad && Math.abs(z) === rad && y >= 5) continue; leafPlan.push([x, y, z]); } }
+leafPlan.sort((a, b) => (a[1] - b[1]) || (Math.hypot(a[0], a[2]) - Math.hypot(b[0], b[2])));
+
+// ---------------- árbol gigante (instanciado; crece escalando)
+const trunk = new THREE.Group(); trunk.position.y = .5; app.scene.add(trunk);
+{ const l = []; for (let y = 0; y < TRUNK_H; y++) for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) l.push([x, y + .5, z]); VK.instanced(trunk, app.M.log, l); }
+const canopy = new THREE.Group(); canopy.position.y = CAN_Y; app.scene.add(canopy);
+{ const l = [], r = VK.rng(9); for (let x = -7; x <= 7; x++) for (let y = -4; y <= 4; y++) for (let z = -7; z <= 7; z++) { const d = (x * x + z * z) / (CAN_RX * CAN_RX) + (y * y) / (CAN_RY * CAN_RY); if (d < 1 && (d < .7 || r() < .75)) l.push([x, y, z]); } VK.instanced(canopy, app.M.leaves, l); }
+trunk.scale.set(1, .0001, 1); canopy.scale.setScalar(.0001); trunk.visible = canopy.visible = false;
+
+// ---------------- HUD (rótulos) pegado a la cámara: el render solo captura el canvas
+app.scene.add(app.camera);
+const hudC = document.createElement('canvas'); hudC.width = 1080; hudC.height = 1920; const hg = hudC.getContext('2d');
+const hudT = new THREE.CanvasTexture(hudC);
+const hud = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: hudT, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+hud.renderOrder = 999; hud.position.z = -1; app.camera.add(hud);
+const TABS = ['1 SEGUNDO', '1 DÍA', '1 SEMANA', '1 AÑO'];
+const tabStart = [T.sec, T.day, T.week, T.year];
+const ease = VK.ease;
+function outlined(text, x, y, size, fill = '#fff', stroke = 18) {
+  hg.font = `900 ${size}px Inter, sans-serif`; hg.textAlign = 'center'; hg.textBaseline = 'middle';
+  hg.lineJoin = 'round'; hg.lineWidth = stroke; hg.strokeStyle = '#000'; hg.strokeText(text, x, y); hg.fillStyle = fill; hg.fillText(text, x, y);
+}
+function drawHud(F) {
+  hg.clearRect(0, 0, 1080, 1920);
+  // pestañas de tiempo
+  let act = -1; tabStart.forEach((s, i) => { if (F >= s) act = i; });
+  const w = 236, gap = 14, x0 = (1080 - (4 * w + 3 * gap)) / 2;
+  TABS.forEach((t, i) => {
+    const x = x0 + i * (w + gap), y = 150;
+    const on = i === act, k = on ? Math.min(1, (F - tabStart[i]) / 8) : 0;
+    const s = on ? 1 + .18 * Math.sin(k * Math.PI) : 1;
+    hg.save(); hg.translate(x + w / 2, y + 45); hg.scale(s, s);
+    hg.fillStyle = on ? (i === 3 ? '#ff3b30' : '#3dbb4a') : 'rgba(10,10,20,.55)';
+    hg.strokeStyle = '#000'; hg.lineWidth = 7;
+    hg.beginPath(); hg.roundRect(-w / 2, -45, w, 90, 26); hg.fill(); hg.stroke();
+    hg.font = '900 40px Inter, sans-serif'; hg.textAlign = 'center'; hg.textBaseline = 'middle';
+    hg.fillStyle = on ? '#fff' : 'rgba(255,255,255,.55)'; hg.fillText(t, 0, 3); hg.restore();
+  });
+  // gancho
+  if (F < T.sec) { const k = Math.min(1, F / 8); hg.globalAlpha = k; outlined('PLANTÉ UNA SEMILLA', 540, 330, 92); outlined('Y ESPERÉ…', 540, 440, 92, '#ffd23a'); hg.globalAlpha = 1; }
+  // remate / llamada a comentar
+  if (F >= T.top + 8) {
+    const k = ease.outBack(Math.min(1, (F - T.top - 8) / 12));
+    hg.save(); hg.translate(540, 1520); hg.scale(k, k); outlined('¿Y EN 10 AÑOS?', 0, 0, 104, '#ffd23a', 22); hg.restore();
+    if (F >= T.top + 18) outlined('COMENTÁ ABAJO', 540, 1650, 60, '#fff', 14);
+  }
+  // destello del impacto
+  const fl = F >= T.erupt ? Math.max(0, 1 - (F - T.erupt) / 7) : 0;
+  if (fl > 0) { hg.fillStyle = `rgba(255,255,255,${.85 * fl})`; hg.fillRect(0, 0, 1080, 1920); }
+  hudT.needsUpdate = true;
+}
+
+// ---------------- cámara por planos (cortes) + temblor con decaimiento
+const L = (a, b, t) => a + (b - a) * t;
+const LV = (a, b, t) => [L(a[0], b[0], t), L(a[1], b[1], t), L(a[2], b[2], t)];
+function shot(F) {
+  const seg = (a, b, A, B, e = ease.inOut) => { const t = e(Math.min(1, Math.max(0, (F - a) / (b - a)))); return { tg: LV(A.tg, B.tg, t), r: L(A.r, B.r, t), phi: L(A.phi, B.phi, t), th: L(A.th, B.th, t), fov: L(A.fov, B.fov, t) }; };
+  const hp = [hero.group.position.x, hero.group.position.y, hero.group.position.z];
+  if (F < T.sec) return seg(0, T.sec, { tg: [1.1, 1.75, .4], r: 7.4, phi: .16, th: -1.05, fov: 40 }, { tg: [1.1, 1.65, .4], r: 6.0, phi: .14, th: -.85, fov: 38 });
+  if (F < T.face) return seg(T.sec, T.face, { tg: [.3, .7, .1], r: 3.4, phi: .5, th: -.55, fov: 34 }, { tg: [.2, .66, .05], r: 2.6, phi: .46, th: -.45, fov: 32 });
+  if (F < T.day) return seg(T.face, T.day, { tg: [hp[0], hp[1] + 1.6, hp[2]], r: 2.9, phi: .08, th: -1.25, fov: 34 }, { tg: [hp[0], hp[1] + 1.62, hp[2]], r: 2.4, phi: .06, th: -1.15, fov: 32 });
+  if (F < T.sprout) return seg(T.day, T.sprout, { tg: [1, 1.0, .3], r: 7.6, phi: .26, th: -.85, fov: 40 }, { tg: [.9, .95, .25], r: 6.4, phi: .22, th: -.7, fov: 38 });
+  if (F < T.week) return seg(T.sprout, T.week, { tg: [.1, .85, .05], r: 3.6, phi: .3, th: -.5, fov: 36 }, { tg: [.1, .9, .05], r: 3.0, phi: .26, th: -.42, fov: 34 });
+  if (F < T.year) return seg(T.week, T.year, { tg: [.6, 2.4, 0], r: 12, phi: .12, th: -.4, fov: 42 }, { tg: [.5, 4.0, 0], r: 10.5, phi: .2, th: -.1, fov: 42 });
+  if (F < T.erupt) return seg(T.year, T.erupt, { tg: [.9, 2.6, .3], r: 8.0, phi: .1, th: -.95, fov: 40 }, { tg: [1.1, 2.4, .3], r: 6.0, phi: .08, th: -.88, fov: 38 });
+  if (F < T.reveal) { const s = seg(T.erupt, T.reveal, { tg: [0, 3, 0], r: 24, phi: .07, th: .95, fov: 46 }, { tg: [0, 22, 0], r: 32, phi: .12, th: 1.0, fov: 50 }, ease.out); return s; }
+  if (F < T.top) return seg(T.reveal, T.top, { tg: [0, 22, 0], r: 40, phi: .2, th: 1.0, fov: 50 }, { tg: [0, 31, 0], r: 54, phi: .36, th: 1.2, fov: 50 });
+  return seg(T.top, N, { tg: [hp[0], hp[1] + 1.65, hp[2]], r: 3.6, phi: .14, th: 1.0, fov: 38 }, { tg: [hp[0], hp[1] + 1.7, hp[2]], r: 2.7, phi: .1, th: .9, fov: 34 });
+}
+function trauma(F) { // temblor que cambia de signo cada cuadro y decae
+  let a = 0;
+  for (const [f0, g, d] of [[T.erupt, 1.0, 26], [T.erupt + 14, .5, 14], [T.grow + 64, .25, 8]]) { const n = F - f0; if (n >= 0 && n < d) a += g * (1 - n / d) ** 1.6; }
+  return a;
+}
+function applyCamera(F) {
+  const s = shot(F), a = trauma(F), j = (F % 2 ? -1 : 1);
+  const scale = .06 * s.r;
+  app.cam.target.set(s.tg[0] + j * a * scale * .5, s.tg[1] + a * scale * .35 * Math.sin(F * 2.3), s.tg[2] - j * a * scale * .3);
+  app.cam.radius = s.r; app.cam.phi = s.phi; app.cam.theta = s.th;
+  app.camera.fov = s.fov; app.camera.updateProjectionMatrix();
+  const h = 2 * Math.tan(THREE.MathUtils.degToRad(s.fov) / 2); hud.scale.set(h * app.camera.aspect, h, 1);
+}
+
+// ---------------- cielo: el tiempo pasa (día/noche girando)
+function applySky(F) {
+  let tod = .3;
+  const spin = (a, b, n) => { const t = Math.min(1, Math.max(0, (F - a) / (b - a))); return ease.inOut(t) * n; };
+  tod += spin(T.day, T.day + 32, 1) + spin(T.week, T.grow, 4) + spin(T.year + 2, T.erupt - 4, 12);
+  app.sky.tod = tod % 1;
+}
+
+// ---------------- acciones por cuadro (una sola vez cada una)
+const done = new Set();
+const once = (k, F, at, fn) => { if (F >= at && !done.has(k)) { done.add(k); fn(); } };
+function actions(F) {
+  // plantar
+  hero.pose = F < T.seed + 6 ? 'reach' : 'idle';
+  hero.reach = Math.min(1, F / T.seed);
+  hero.lookTarget = new V3(0, .6, 0);
+  once('seed', F, T.seed, () => { seed = mini(SEEDM, 0, .64, 0, .24, .24, .24, .22); app.puff(new V3(0, .55, 0), 'dirt', 10, 2.4, .5); });
+  // caras
+  let face = 'neutral';
+  if (F >= T.sec && F < T.day) face = 'bored';
+  if (F >= T.sprout && F < T.week) face = 'happy';
+  if (F >= T.grow) face = 'happy';
+  if (F >= T.year) face = 'neutral';
+  if (F >= T.erupt) face = 'shock';
+  if (F >= T.top + 22) face = 'smug';
+  setFace(face);
+  // 1 día: brote
+  once('sprout', F, T.sprout, () => {
+    if (seed) { app.scene.remove(seed); seed = null; }
+    const s = mini(STEM, 0, .78, 0, .14, .55, .14);
+    const a = mini(LEAF, -.17, 1.02, 0, .24, .24, .24, .28);
+    const b = mini(LEAF, .17, 1.08, 0, .24, .24, .24, .3);
+    sprout = [s, a, b]; app.puff(new V3(0, .9, 0), LEAF, 8, 2, .4);
+  });
+  if (F >= T.sprout + 4 && F < T.week) hero.pose = 'cheer';
+  // 1 semana: árbol chico crece bloque por bloque
+  if (F >= T.grow) {
+    if (!done.has('clearSprout')) { done.add('clearSprout'); sprout.forEach(o => app.scene.remove(o)); sprout = []; }
+    const logs = Math.min(5, Math.floor((F - T.grow) / 4) + 1);
+    while (small.filter(o => o.userData.type === 'log').length < logs) { const y = small.filter(o => o.userData.type === 'log').length + 1; small.push(VK.block(app, 'log', 0, y, 0, { pop: true })); }
+    const nLeaves = Math.max(0, Math.min(leafPlan.length, Math.floor((F - T.grow - 20) * 1.3)));
+    while (small.filter(o => o.userData.type === 'leaves').length < nLeaves) { const p = leafPlan[small.filter(o => o.userData.type === 'leaves').length]; small.push(VK.block(app, 'leaves', p[0], p[1], p[2], { pop: true })); }
+    if (F < T.year && F > T.grow + 20) hero.pose = 'cheer';
+  }
+  // 1 año: se acerca a mirar… y erupción
+  once('walk', F, T.year + 6, () => { hero.goTo([[1.3, .2]]); });
+  if (F >= T.year + 6 && F < T.erupt) { hero.lookTarget = new V3(0, 4, 0); }
+  once('erupt', F, T.erupt, () => {
+    VK.explode(app, small, { center: new V3(0, 1.5, 0), power: 1.3, ground: world.groundTopAt });
+    trunk.visible = canopy.visible = true;
+    for (let i = 0; i < 4; i++) { app.puff(new V3(0, .8, 0), 'dirt', 30, 9, 2.6); app.puff(new V3(0, .8, 0), 'grass', 14, 7, 2.6); }
+  });
+  if (F >= T.erupt) {
+    G.trunkK = ease.outBack(Math.min(1, (F - T.erupt) / 34)) ;
+    G.trunkK = Math.max(.0001, Math.min(1.06, G.trunkK));
+    trunk.scale.set(1, G.trunkK, 1);
+    G.canopyK = Math.max(.0001, ease.outBack(Math.min(1, Math.max(0, (F - T.erupt - 22) / 20))));
+    canopy.scale.setScalar(G.canopyK); canopy.position.y = .5 + TRUNK_H * Math.min(1, G.trunkK) - 0;
+    hero.pose = 'panic'; hero.lookTarget = null;
+    if (F === T.erupt + 24) for (let i = 0; i < 3; i++) app.puff(new V3(0, canopy.position.y, 0), 'leaves', 30, 10, 6);
+  }
+  if (F >= T.top) { hero.yaw = 1.0; hero.pose = F >= T.top + 22 ? 'wave' : 'panic'; }
+}
+
+app.onUpdate(() => {}); // el kit corre partículas, pops, caminata y explosión
+app.start();
+
+// ---------------- reloj de cuadros: aplica la línea de tiempo antes de cada paso
+if (window.__vk) {
+  const orig = window.__vk.frame; let F = 0;
+  const apply = f => { actions(f); applySky(f); applyCamera(f); drawHud(f); };
+  apply(0); app.updateCamera(0); app.render();
+  window.__vk.frame = (n = 1) => {
+    let r;
+    for (let i = 0; i < n; i++) {
+      F++;
+      const frozen = FREEZE.includes(F);
+      if (!frozen) actions(F);
+      applySky(F); applyCamera(F); drawHud(F);
+      app.speed = frozen ? 0 : 1;
+      r = orig(1);
+    }
+    return r;
+  };
+  window.__frameNo = () => F;
+}
+</script>
+</body>
+</html>

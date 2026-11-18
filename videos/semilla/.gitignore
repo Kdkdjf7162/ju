@@ -1,0 +1,3 @@
+out/
+sound/out/*.json
+sound/out/mix_pre.wav
