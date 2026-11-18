@@ -1,0 +1,122 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Bolitas</title>
+<style>html,body{margin:0;background:#05060f}canvas{display:block}</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="sim.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 30, FEX = 480, HOLD = 4, N = 610;
+const C = BolitasSim.CFG, cv = document.getElementById('c'), g = cv.getContext('2d');
+const S = BolitasSim.create(7), RR = BolitasSim.rng(99);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const outBack = t => { const c = 1.9; t -= 1; return 1 + (c + 1) * t * t * t + c * t * t; };
+
+// sprites con brillo, uno por tono
+const sprites = []; for (let k = 0; k < 36; k++) {
+  const s = document.createElement('canvas'); s.width = s.height = 128; const x = s.getContext('2d');
+  const h = k * 10, gl = x.createRadialGradient(64, 64, 8, 64, 64, 64);
+  gl.addColorStop(0, `hsla(${h},100%,65%,.65)`); gl.addColorStop(1, `hsla(${h},100%,60%,0)`); x.fillStyle = gl; x.fillRect(0, 0, 128, 128);
+  const co = x.createRadialGradient(54, 52, 4, 64, 64, 30);
+  co.addColorStop(0, '#fff'); co.addColorStop(.35, `hsl(${h},95%,68%)`); co.addColorStop(1, `hsl(${h},90%,48%)`);
+  x.fillStyle = co; x.beginPath(); x.arc(64, 64, 30, 0, 7); x.fill(); sprites.push(s);
+}
+const spr = h => sprites[((Math.round(h / 10) % 36) + 36) % 36];
+
+// estado visual
+let evIdx = 0, lastT = 0, trauma = 0, counterPop = 0, lastPow = 1, flashes = [], sparks = [], prev = new Map();
+let shards = null, post = null, confetti = [], endT0 = null, fl = 0;
+const ringHue = hp => 190 + (1 - hp) * 160;
+const health = t => 1 - Math.pow(clamp(t / C.tEx, 0, 1), 1.35);
+const cracks = Array.from({ length: 14 }, (_, i) => ({ a: RR() * 6.283, l: 40 + RR() * 110, k: i / 14 }));
+
+function hitVisuals(upto) {
+  let cnt = 0;
+  while (evIdx < S.events.length && S.events[evIdx].t <= upto) {
+    const e = S.events[evIdx++]; if (e.explode) continue;
+    flashes.push({ a: e.a, life: 1 }); if (cnt++ < 5) for (let i = 0; i < 3; i++) { const an = e.a + Math.PI + (RR() - .5) * 1.6, sp = 160 + RR() * 340; sparks.push({ x: e.x, y: e.y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 1, h: ringHue(health(e.t)) }); }
+    trauma = Math.min(1, trauma + (S.balls.length < 20 ? .06 : .012));
+    const p = Math.pow(2, Math.floor(Math.log2(e.n))); if (p > lastPow) { lastPow = p; counterPop = 1; }
+  }
+}
+
+function drawBg(hp, t) {
+  const bg = g.createRadialGradient(W / 2, 900, 100, W / 2, 900, 1300); bg.addColorStop(0, '#141a3d'); bg.addColorStop(1, '#04050c');
+  g.fillStyle = bg; g.fillRect(-60, -60, W + 120, H + 120);
+  const danger = clamp((t - 11) / 5, 0, 1); if (danger > 0 && !post) { g.fillStyle = `rgba(255,30,60,${danger * (.07 + .07 * Math.sin(t * 14))})`; g.fillRect(-60, -60, W + 120, H + 120); }
+}
+function drawRing(hp, t, dt) {
+  const h = ringHue(hp), pulse = 1 + (t > 12 ? .004 * Math.sin(t * 30) * (t - 12) : 0);
+  g.save(); g.translate(C.cx, C.cy); g.scale(pulse, pulse);
+  g.lineWidth = 34; g.strokeStyle = `hsla(${h},100%,60%,.16)`; g.beginPath(); g.arc(0, 0, C.R + 6, 0, 7); g.stroke();
+  g.lineWidth = 12; g.strokeStyle = `hsl(${h},100%,64%)`; g.beginPath(); g.arc(0, 0, C.R + 6, 0, 7); g.stroke();
+  g.lineWidth = 3; g.strokeStyle = '#fff'; g.beginPath(); g.arc(0, 0, C.R + 6, 0, 7); g.stroke();
+  for (const f of flashes) { g.lineWidth = 22; g.strokeStyle = `hsla(${h},100%,85%,${f.life})`; g.beginPath(); g.arc(0, 0, C.R + 6, f.a - .16, f.a + .16); g.stroke(); }
+  g.lineCap = 'round'; for (const c of cracks) { if (c.k > 1 - hp + .08) continue; const l = c.l * clamp((1 - hp - c.k) * 6 + .3, 0, 1.4); g.lineWidth = 4; g.strokeStyle = '#fff'; g.beginPath(); g.moveTo(Math.cos(c.a) * (C.R + 6), Math.sin(c.a) * (C.R + 6)); g.lineTo(Math.cos(c.a + .06) * (C.R + 6 - l * .55), Math.sin(c.a + .06) * (C.R + 6 - l * .55)); g.lineTo(Math.cos(c.a - .03) * (C.R + 6 - l), Math.sin(c.a - .03) * (C.R + 6 - l)); g.stroke(); }
+  g.restore();
+}
+function drawBall(x, y, r, h, px, py, alpha = 1) {
+  g.globalAlpha = alpha;
+  if (px != null) { const d = Math.hypot(x - px, y - py); if (d > 3) { g.strokeStyle = `hsla(${h},100%,70%,.55)`; g.lineWidth = Math.min(r * 1.6, 40); g.lineCap = 'round'; g.beginPath(); g.moveTo(px, py); g.lineTo(x, y); g.stroke(); } }
+  const s = r * 4.3; g.drawImage(spr(h), x - s / 2, y - s / 2, s, s); g.globalAlpha = 1;
+}
+function text(str, x, y, size, fill = '#fff', stroke = 16) { g.font = `900 ${size}px Inter, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = stroke; g.strokeStyle = '#05060f'; g.strokeText(str, x, y); g.fillStyle = fill; g.fillText(str, x, y); }
+function hud(t, hp, n) {
+  if (t < 3.6 && !post) { const k = Math.min(1, t / .25), o = t > 3.2 ? 1 - (t - 3.2) / .4 : 1; g.globalAlpha = k * o; text('CADA GOLPE', W / 2, 150, 104); text('LO DUPLICA', W / 2, 255, 104, '#ffd23a'); g.globalAlpha = 1; }
+  const sc = 1 + .35 * counterPop; g.save(); g.translate(W / 2, 385); 
+  if (t >= 3.6 || post) { g.scale(sc, sc); text('×' + n, 0, 0, 150, `hsl(${ringHue(hp)},100%,70%)`, 20); }
+  else { g.scale(sc, sc); text('×' + n, 0, 0, 120, '#fff', 18); }
+  g.restore();
+  // barra de resistencia
+  if (!post) { const bw = 760, bx = (W - bw) / 2, by = 1500; text('RESISTENCIA DEL CÍRCULO', W / 2, by - 60, 44, '#fff', 12);
+    g.fillStyle = 'rgba(255,255,255,.14)'; g.beginPath(); g.roundRect(bx, by, bw, 46, 23); g.fill();
+    g.fillStyle = `hsl(${ringHue(hp)},100%,60%)`; g.beginPath(); g.roundRect(bx, by, Math.max(46, bw * hp), 46, 23); g.fill();
+    g.strokeStyle = '#05060f'; g.lineWidth = 6; g.beginPath(); g.roundRect(bx, by, bw, 46, 23); g.stroke(); }
+}
+
+function frame(f) {
+  const hold = f > FEX && f <= FEX + HOLD, afterEx = f > FEX + HOLD;
+  const simT = Math.min(f, FEX) / FPS, dt = 1 / FPS;
+  if (!afterEx || !post) { S.advanceTo(simT); hitVisuals(simT); }
+  const te = afterEx ? (f - FEX - HOLD) / FPS : 0;
+  const t = simT, hp = afterEx ? 0 : health(t);
+  if (!hold) { flashes.forEach(o => o.life -= dt * 6); flashes = flashes.filter(o => o.life > 0); sparks.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 500 * dt; p.life -= dt * 2.4; }); sparks = sparks.filter(p => p.life > 0); trauma *= .9; counterPop *= .86; }
+  if (afterEx && !post) { // snapshot: shards, bolitas hacia el espectador, confeti
+    shards = Array.from({ length: 36 }, (_, i) => { const a = i / 36 * 6.283; return { a, w: 6.283 / 36 * .9, vr: 300 + RR() * 700, r: C.R + 6, rot: (RR() - .5) * 3, ra: 0 }; });
+    post = S.balls.map(b => { const dx = b.x - C.cx, dy = b.y - C.cy, d = Math.hypot(dx, dy) || 1, sp = 350 + RR() * 700; return { x: b.x, y: b.y, z: 0, vx: dx / d * sp + (RR() - .5) * 200, vy: dy / d * sp + (RR() - .5) * 200, vz: 420 + RR() * 1500, h: b.hue, r: BolitasSim.radius(S.balls.length), px: null, py: null }; });
+    for (let i = 0; i < 90; i++) { const a = RR() * 6.283, sp = 300 + RR() * 1300; confetti.push({ x: C.cx, y: C.cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 200, h: RR() * 360, life: 1, rot: RR() * 6, s: 10 + RR() * 16 }); }
+    fl = 1; trauma = 1;
+  }
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); drawBg(hp, t);
+  const sh = trauma * trauma * 34, shk = (f % 2 ? -1 : 1);
+  g.translate(shk * sh * .6 * Math.sin(f * 2.3 + 1), sh * .5 * Math.cos(f * 3.1));
+  if (!afterEx || !post) {
+    // empuje de cámara los últimos segundos
+    const z = 1 + .06 * clamp((t - 12.5) / 3.5, 0, 1); g.translate(C.cx, C.cy); g.scale(z, z); g.translate(-C.cx, -C.cy);
+    drawRing(hp, t, dt);
+    for (const b of S.balls) { const p = prev.get(b.id); drawBall(b.x, b.y, BolitasSim.radius(S.balls.length), b.hue, p ? p[0] : null, p ? p[1] : null); }
+    if (!hold) { prev = new Map(S.balls.map(b => [b.id, [b.x, b.y]])); }
+    for (const p of sparks) { g.fillStyle = `hsla(${p.h},100%,75%,${p.life})`; g.beginPath(); g.arc(p.x, p.y, 5 * p.life + 1, 0, 7); g.fill(); }
+  } else {
+    // explosión
+    for (const s of shards) { s.r += s.vr * dt; s.ra += s.rot * dt; const al = clamp(1 - te / 1.1, 0, 1); g.lineWidth = 12 * al + 2; g.strokeStyle = `hsla(${330},100%,70%,${al})`; g.beginPath(); g.arc(C.cx, C.cy, s.r, s.a + s.ra, s.a + s.ra + s.w); g.stroke(); }
+    for (const c of confetti) { c.x += c.vx * dt; c.y += c.vy * dt; c.vy += 900 * dt; c.vx *= .985; c.life -= dt * .7; if (c.life > 0) { g.save(); g.translate(c.x, c.y); g.rotate(c.rot += dt * 8); g.fillStyle = `hsla(${c.h},100%,65%,${clamp(c.life, 0, 1)})`; g.fillRect(-c.s / 2, -c.s / 4, c.s, c.s / 2); g.restore(); } }
+    const F = 1100;
+    for (const b of post) {
+      b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.vz *= 1.012;
+      if (b.z >= F - 80) continue; const s = F / (F - b.z), sx = C.cx + (b.x - C.cx) * s, sy = C.cy + (b.y - C.cy) * s;
+      drawBall(sx, sy, b.r * s, b.h, b.px, b.py); b.px = sx; b.py = sy;
+    }
+  }
+  g.restore();
+  // HUD sobre todo
+  const nShow = S.balls.length;
+  if (!afterEx || te < 1.6) hud(t, hp, nShow);
+  if (afterEx) {
+    if (te >= 1.75) { if (endT0 === null) endT0 = te; const k = clamp((te - 1.75) / .35, 0, 1), e = outBack(k);
+      g.fillStyle = `rgba(5,6,15,${.82 * clamp((te - 1.6) / .3, 0, 1)})`; g.fillRect(0, 0, W, H);
+      g.save(); g.translate(W / 2, 800); g.scale(e, e); text(nShow + ' BOLITAS', 0, -40, 130, '#ffd23a', 22); g.restore();
+      if (te > 2.2) { g.globalAlpha = clamp((te - 2.2) / .3, 0, 1); text('¿HASTA CUÁNTAS', W / 2, 1010, 82); text('LLEGARÍAS VOS?', W / 2, 1110, 82, '#7df9ff'); g.globalAlpha = 1; } }
+    if (fl > 0) { g.fillStyle = `rgba(255,255,255,${fl})`; g.fillRect(0, 0, W, H); fl = Math.max(0, fl - .12); }
+  }
+  if (hold) { g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(0, 0, W, H); }
+}
+window.__f = 0; window.__render = n => { frame(n); return true; }; window.__ready = true;
+</script></body></html>
