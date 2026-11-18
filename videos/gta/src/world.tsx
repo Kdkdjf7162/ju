@@ -6,7 +6,7 @@ import { Ball, IBox, House, Sign, Ground, Sky, Clouds, Lights, Mood, V3, INK } f
 // ---------------- pueblo ----------------
 export const SHOP = { office: -14, bakery: -4, super: 6, police: 16 };
 
-const LatheTower: React.FC<{ position: V3; h?: number }> = ({ position, h = 16 }) => {
+export const LatheTower: React.FC<{ position: V3; h?: number }> = ({ position, h = 16 }) => {
   const geo = useMemo(() => {
     const pts: THREE.Vector2[] = [];
     for (let i = 0; i <= 20; i++) {
