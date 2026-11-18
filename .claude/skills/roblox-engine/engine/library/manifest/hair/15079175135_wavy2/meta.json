@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://14148251994",
+ "id": "15079175135",
+ "att": [
+  -0.00042724609375,
+  1.2760040760040283,
+  -0.1916046142578125,
+  1,
+  1.034995755766488e-09,
+  -1.2300694516343715e-16,
+  -1.034995755766488e-09,
+  1,
+  -1.0477380074647158e-09,
+  1.2192254446760463e-16,
+  1.0477380074647158e-09,
+  1
+ ],
+ "mesh_id": "rbxassetid://15073263603",
+ "name": "Accessory (MeshPartAccessory)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  2.382514715194702,
+  3.4009389877319336,
+  2.048247814178467
+ ],
+ "size": [
+  2.382514715194702,
+  3.4009389877319336,
+  2.048247814178467
+ ],
+ "source": "studio",
+ "verts": 7460,
+ "tris": 3960,
+ "tex_sig": "fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+nJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cnJ2cy83Ly8vLzczNzs3Ozs3Ozs3Ozs3OzM3MzM3Mzs7Ozc3Nzs7Ozs3Ozs3Ozs3Ozs3O6Ono5ufm6enp6Ojo6unq6ejp6unq6enp5+jn6unq6ejp6enp6unq6ejp6unq6enp6urq6enp6urq6Ojo6uvq6Ono6enp6erp6urq6urq6urq6erp6enp6erp6urq6urq4eHh3+Df3+Df3t/e4OHg39/f3t/e3+Df4OHg3d7d4OHg3+Df3t/e3t/e3+Df3+Df2tva2NjY2dnZ2NnY2tva2djZ2NjY2dnZ2tra1tjW2tra2NnY2dnZ2NnY2drZ2NnY1tbW1dXV1tbW1tfW1tfW1tfW1tfW1tfW1tfW1dbV1tbW1dbV1tfW1tfW1dbV1tfW19bX1tfW1tfW19jX19fX2NnY2NnY2NnY19jX19jX19jX1tfW19fX2NnY1dbV19jX3N3c29zb3Nzc29zb29vb3d7d3d3d3d3d29zb3d7d3d3d3N3c29vb3d7d2tra3Nzc39/f3t/e39/f39/f3+Df4eHh3+Df4ODg39/f4uLi4eHh4OHg3+Df4ODg3t/e4ODg3+Df3t/e4ODg4ODg4eHh4eHh3t7e3t/e3d7d4eHh4eHh4ODg4OHg3t/e39/f397f29zb2tva3d3d2tva3t7e3Nzc2tra2tva2tva3Nzc3N3c3Nzc3d3d2drZ3Nzc2dnZ1tfW1dXV19fX1NTU2NnY1NXU1NXU1dbV1dXV1tXW1tfW1tfW19jX09TT1tbW0tPS0dLR0NDQ0NHQz9DP0dLRzs/Oz9DPz9DPz9DPz9DPz9DP0dHR09TTz9DP0tHSzc7Nzs/Ozc7Nzc7Nzc7Nzc7NzM3Mzc7NzM3My8zLzM3Mzc7Nz9DP0NHQzM3Mzs/OysvK",
+ "tex_size": [
+  60,
+  60
+ ]
+}

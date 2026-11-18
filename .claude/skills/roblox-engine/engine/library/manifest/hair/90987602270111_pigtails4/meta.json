@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://134380364024927",
+ "id": "90987602270111",
+ "att": [
+  -0.00030517578125,
+  1.2665185928344727,
+  -0.2098388671875,
+  1,
+  0,
+  -4.371138828673793e-08,
+  0,
+  1,
+  0,
+  4.371138828673793e-08,
+  0,
+  1
+ ],
+ "mesh_id": "rbxassetid://80544082218814",
+ "name": "Accessory (angel clip pigtails)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  2.5503909587860107,
+  3.2992007732391357,
+  1.8157830238342285
+ ],
+ "size": [
+  2.5503909587860107,
+  3.2992007732391357,
+  1.8157830238342285
+ ],
+ "source": "studio",
+ "verts": 7239,
+ "tris": 3934,
+ "tex_sig": "YGh7WmN3X2d6WWN2YGh7ZWx/XGV1XmZ3XGN2WWJ1Ymt8XWR3XmZ4XWZ3WWN2Y2x9sbbArrO9sbW/kJinaXWJbnqMY2+DZXGEY2+DYm6BbHeKY2+DZHGFZXGFYm6BbniL7Orr5eTi7OnpxMfSeIecfY2hbn+Vb4CWbX+Ua3yReoufcIGVb4CVcYGWbH2Se4ug29ra3dnV6OXkxcnUhJasiZyyfI+lfI6je42jeIuih5qwfpGme42jfY+leYyiiJyx4N7a5ODc6+nmydHajaC2lKe9h5uxhZmuh5uwg5eukaW7ipyzhZmviJyyg5eukaS62tfU5OHd7Ornz9belqi9nK7CkaS5j6K4kKS6jKG2mavAkqS6j6K4kqW7jaC2mau/4+Df4d3a7uzq1Nvjnq/DobLHm63CmqvBmq3Blqq/n7HEm63BmavAnK7Clqq/nrDDz9bexs3VzdPdvsrWo7TIprfKo7XIo7THo7XIobPGpbbJpbbJo7XHprXIorPGpLXJucbTx9DZscDPq7vMqbnLq7zMrb3OqrvLqrvMq7vMq7zMrr7Oq7zMq7zMq7zMqrrMxtDY0djfw87Ys8LRrr7Orb7Os8LSsMDPr8DPssLRsMDQtMPSscDQsL/Rs8LSrr3PwMvW1NvivcnWtcTSrr7Or8DPtcTUs8LSsMDRtcTSscHQtsTTs8HSsL7QtcTUsL/QscDQs8LRqLjKscHQq7zMrL3NssHRrb7Oq7zNssHQrb7OssPSrb3OqbnKssHRrb3NprfJp7jJnK7Bp7jKo7THpbbIqLnKo7XHoLLFqLnKp7nLqrvLo7TGnrDCqLnJprfJmazAl6u/jaK4mKzAmKu/nK7AmqzAk6e8kaS5m63BnrDEna/Ck6i8jqO4mq3AnK7Ai5+0h5yxf5Ssh5yxi6G2kKW6iZ6zhZqwg5eti6C1kqa7jaK3g5mwf5asiZ+zjqS4gJOpeo+mdYujepCmgpetiJ2yfJKoeo+mdoyjfpSqiZ+1gpiveI6ldoujfJKohp2z",
+ "tex_size": [
+  64,
+  64
+ ]
+}

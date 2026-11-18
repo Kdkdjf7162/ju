@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://128144592080365",
+ "id": "103782381495279",
+ "att": [
+  -0.0004024505615234375,
+  -0.4830660820007324,
+  0.4059906005859375,
+  -1,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  -1
+ ],
+ "mesh_id": "rbxassetid://110414938118730",
+ "name": "Accessory (Goku Super Saiyan Hair Dragon Ball\n)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  2.8199996948242188,
+  2.9528002738952637,
+  3.186800003051758
+ ],
+ "size": [
+  2.8199996948242188,
+  2.9528002738952637,
+  3.186800003051758
+ ],
+ "source": "studio",
+ "verts": 5607,
+ "tris": 2474,
+ "tex_sig": "6r2d3LSS4rmX4raYuIyAXT9KX0xUUE1XICMpJCUwQkZWZ25/XGV0FxsdCAgKGhsh6r2d2K+QnoFqoINuvpyMnoqUjISKRkhPLTM7FBUaLDE6REpVUFhmJCkvGB4hMzpC8sWh78Ogz6mL1q+QspaBeHd4bnFxLC8wHiMoAwQFFBcbLTQ8LjM8JisxNz5GOkNM6b+c98ql98ml8cShmXZnMx8oNys0JiMkDA0PBQYGBgcIDxMWGh4iExQXPkJLQkhS4rqX9Mmm8sin8Malx5OGi09kimZ8f3ZwgH1qjIyLi4uKgoSAgoWFi42OmpyalpeOzamJ2Lmh1Lan0LKnu5SRkltkmm53xr2m+uqk//vo//vh/vrd/f/4/f72/vrq/vK/noNq07mg18Sxybiku6WSi2FclWdswbae9+WT8uGf+uym9OWh+fPV+/XO+Omd/+6fx6aI3L6L3L9zzLdko5xigIBuj4eEs6mK8NuE3blg6M925cx127dl6c1+48Bk++WK6cGg1biSqJp8dXZkbXZiaHdobHBsl4hz1rVtzaBRzqNU2LNkzp1M0qJQ0J1L4blk98ml9sqlr5yLbW5vbnBva21ramxqj3F+wHaSy26Uy2+VynCWy2+VzG6Vz3GY0HSW7cKe8MWgrJqIb3FxcXNzbnBubXBti22DzmOx0GG00WO0zWCz0GG0z2Cz0WK10WK14LSV7cKetZ6KdnRxa21ram1qam1qiWWAymSv0WK00WK10WK10WK10WK1z2G00WK16Lub8sai6cGee25iPT09Ozw7Ozw7YEdZxGCswlupy1+x0GK2z2G1yl+wwVqnz2CyyaaK0q2O1rCPdmVZNzc3PT49QUFBWkhVll2ImlmKnFyMol+TpGGVrW6eqmyaqWiYTElEUU1HUktHQjw9Ozw7YWNhbW1tc3FydXB0c3J1dnJ1dnJ2fXV+w8HD1NXUq6arOTg5OTo5Nzc3ODc4Oz07ZGVkcXJxdHZ0c3R0cXNyc3V0c3V1fH+Bx8jJ3N3cq6yr",
+ "tex_size": [
+  52,
+  52
+ ]
+}

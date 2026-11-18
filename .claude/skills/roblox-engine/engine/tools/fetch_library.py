@@ -1,0 +1,211 @@
+"""fetch_library.py - rebuild the Roblox character libraries on THIS machine from the shipped id manifest (library/manifest/).
+The public repo ships only ids + our own tags/placement (meta.json); meshes, textures, clothes and animation keys come from Roblox.
+  python tools/fetch_library.py status                 what is missing per library
+  python tools/fetch_library.py public                 faces + clothes from Roblox's public image API (no Studio needed)
+  python tools/fetch_library.py jobs                   write the Studio jobs (Luau + MCP steps) to library/jobs/JOBS.md
+  python tools/fetch_library.py collect hair           after the hair jobs ran in Studio: meshes/textures from Studio's cache
+  python tools/fetch_library.py collect anims <file>.. after each anims job: the file the MCP saved its result to
+  python tools/fetch_library.py collect set <id>       after that set's insert + export + mesh jobs ran in Studio
+Studio jobs need Roblox Studio open (any place, Edit mode, logged in) with the Studio MCP connected. Nothing is saved or published."""
+import io, json, re, shutil, sys, time, urllib.request, zipfile
+from pathlib import Path, PurePosixPath
+
+E = Path(__file__).resolve().parents[1]; A = E / 'assets'; MAN = E / 'library' / 'manifest'; JOBS = E / 'library' / 'jobs'
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+NEED = {'hair': ('mesh.obj', 'meta.json'), 'faces': ('face.png', 'meta.json'), 'outfits': ('template.png', 'meta.json'),
+        'anims': ('anim.json', 'meta.json'), 'rbxsets': ('scene.json',)}
+RBXMESH = 'https://github.com/PrintedScript/RBXMesh/archive/refs/heads/main.zip'   # AGPL: fetched here, never shipped
+AURA_DIR = A / 'vfx' / 'aura_ref' / 'ssj_8092379429'   # Roblox Super Saiyan aura sprites (Creator Store 8092379429), used by vfx.py
+AURA_IDS = ('3074825547', '6187230339', '6584659046', '6584673054', '6741260601', '6954174382', '7186223155', '7216848401',
+            '7387058218', '7447354430', '7447358016', '7451697448', '7451746284', '7451831540')
+R6_RIG = 'https://devforum.roblox.com/t/r6-ik-fk-blender-rig-v25/3586405'
+
+
+def manifest(kind):
+    return sorted(d for d in (MAN / kind).iterdir() if d.is_dir()) if (MAN / kind).exists() else []
+
+
+def complete(d, kind): return all((d / f).exists() for f in NEED[kind])
+
+
+def missing(kind): return [m for m in manifest(kind) if not complete(A / kind / m.name, kind)]
+
+
+def meta(m): return json.loads((m / 'meta.json').read_text(encoding='utf-8')) if (m / 'meta.json').exists() else {}
+
+
+def seed(m, kind):
+    """manifest folder -> assets/<kind>/<same name>/ with our meta (placement, tags) before the Roblox files arrive."""
+    d = A / kind / m.name; d.mkdir(parents=True, exist_ok=True)
+    if (MAN / kind / 'LIBRARY.md').exists() and not (A / kind / 'LIBRARY.md').exists():   # docs tools (rbx_set_doc) update it
+        shutil.copy2(MAN / kind / 'LIBRARY.md', A / kind / 'LIBRARY.md')
+    for f in m.iterdir():
+        if f.is_file() and not (d / f.name).exists(): shutil.copy2(f, d / f.name)
+    return d
+
+
+def unseed(kind):
+    """remove folders a failed fetch left half-filled (the engine treats a folder as a usable library item)."""
+    for m in manifest(kind):
+        d = A / kind / m.name
+        if d.exists() and not complete(d, kind): shutil.rmtree(d); print('INCOMPLETE (removed)', kind, m.name)
+
+
+def status():
+    for k in NEED:
+        n, miss = len(manifest(k)), len(missing(k))
+        print(f'{k:8s} {n - miss}/{n}' + ('' if not miss else f'  missing {miss}') +
+              ('  (fine when `collect anims` said REFUSED: stories play a stand-in clip)' if k == 'anims' and miss and miss <= n // 2 else ''))
+    na = sum((AURA_DIR / f'{i}.png').exists() for i in AURA_IDS)
+    print(f'aura     {na}/{len(AURA_IDS)}' + ('' if na == len(AURA_IDS) else '  missing (run public; without them auras fall back to plain glow spheres)'))
+    r6 = (A / 'r6_parts.blend').exists()
+    print(f"r6 parts {'OK' if r6 else 'missing (optional: authentic head mesh; download the rig at ' + R6_RIG + ', then blender -b <rig .blend> --factory-startup -P tools/extract_r6_parts.py)'}")
+
+
+def public():
+    from PIL import Image
+    from outfit_fetch import get, thumb
+    for kind, key, fname in (('faces', 'texture_id', 'face.png'), ('outfits', 'template_id', 'template.png')):
+        for m in missing(kind):
+            tid = meta(m).get(key)
+            try:
+                im = Image.open(io.BytesIO(thumb(tid) if kind == 'outfits' else get(json.loads(get(
+                    f'https://thumbnails.roblox.com/v1/assets?assetIds={tid}&size=420x420&format=Png'))['data'][0]['imageUrl']))).convert('RGBA')
+            except Exception as e: print('FAIL', kind, m.name, str(e)[:80]); continue
+            d = seed(m, kind); im.save(d / fname); print('OK', kind, m.name); time.sleep(0.25)
+    AURA_DIR.mkdir(parents=True, exist_ok=True)   # anime aura flames: same public thumbnail route, 700 px RGBA
+    for i in AURA_IDS:
+        if (AURA_DIR / f'{i}.png').exists(): continue
+        try: Image.open(io.BytesIO(thumb(i))).convert('RGBA').save(AURA_DIR / f'{i}.png'); print('OK aura', i); time.sleep(0.25)
+        except Exception as e: print('FAIL aura', i, str(e)[:80])
+    status()
+
+
+def chunks(xs, n): return [xs[i:i + n] for i in range(0, len(xs), n)]
+
+
+def jobs():
+    JOBS.mkdir(parents=True, exist_ok=True); steps = []
+    hb = (E / 'tools' / 'hair_batch.luau').read_text(encoding='utf-8')
+    for i, c in enumerate(chunks([meta(m)['id'] for m in missing('hair')], 8)):
+        f = JOBS / f'hair_{i + 1:02d}.luau'; f.write_text(re.sub(r'local IDS = \{[^}]*\}', 'local IDS = {%s}' % ', '.join(c), hb, count=1), encoding='utf-8')
+        steps.append(f'execute_luau (Edit) with the code of `{f.relative_to(E).as_posix()}`')
+    if any(s.startswith('execute_luau') for s in steps): steps.append('`python tools/fetch_library.py collect hair`')
+    am = [(m.name, meta(m)) for m in missing('anims')]
+    packs = sorted({str(x['id']) for _, x in am if 'Creator Store' in x.get('source', '')})
+    for p in packs: steps.append(f'insert_asset assetId {p}, parentPath game.Workspace.AnimImport, assetName imp_{p} (create the AnimImport Folder first with execute_luau if it is missing; '
+                                 'use the MCP insert_asset tool, InsertService:LoadAsset is "not authorized" for it. If insert_asset itself says no permission, go on: '
+                                 'the anims job then reports those clips REFUSED and stories use stand-ins)')
+    ad = (E / 'tools' / 'anim_dump.luau').read_text(encoding='utf-8'); size = 0; batch = []; parts = []
+    for s, x in am:                                   # ~90 000 chars per call (the MCP file route keeps 100 000)
+        est = 120 * int(x.get('keys', 100)) * (2 if 'Creator Store' in x.get('source', '') else 1)
+        if batch and size + est > 90000: parts.append(batch); batch, size = [], 0
+        batch.append((s, x)); size += est
+    if batch: parts.append(batch)
+    for i, b in enumerate(parts):
+        lua = ', '.join('{slug = "%s", id = "%s", name = "%s"}' % (s, x['id'], x['name']) for s, x in b)
+        f = JOBS / f'anims_{i + 1:02d}.luau'; f.write_text(re.sub(r'local JOBS = \{.*\}\}', 'local JOBS = {%s}' % lua, ad, count=1), encoding='utf-8')
+        steps.append(f'execute_luau (Edit) with `{f.relative_to(E).as_posix()}` -> it returns a file path: `python tools/fetch_library.py collect anims <that file>`')
+    ex, me = (E / 'tools' / 'rbx_set_export.luau').read_text(encoding='utf-8'), (E / 'tools' / 'rbx_set_meshes.luau').read_text(encoding='utf-8')
+    for m in missing('rbxsets'):
+        sid = m.name.split('_', 1)[0]
+        steps.append(f'set {m.name}: insert_asset assetId {sid}, parentPath game.Workspace.SetImport, assetName imp_{sid} (create the SetImport Folder first if missing); '
+                     f'execute_luau `tools/rbx_set_export.luau`; then execute_luau `tools/rbx_set_meshes.luau` with ID = "{sid}" and FROM/TO = 1/40, 41/80, ... '
+                     f'until it reports nothing left (DESTROY = true on the last call); then `python tools/fetch_library.py collect set {sid}`')
+    if packs: steps.append('execute_luau: `workspace.AnimImport:Destroy()` (the animation pack copy is not needed any more)')
+    txt = '# Studio jobs (run in order, Roblox Studio open in Edit mode, Studio MCP connected; never save or publish the place)\n\n' + \
+          ''.join(f'{i + 1}. {s}\n' for i, s in enumerate(steps)) + '\nAt the end: `python tools/fetch_library.py status`.\n'
+    (JOBS / 'JOBS.md').write_text(txt, encoding='utf-8'); print(txt if steps else 'nothing to fetch from Studio')
+
+
+def rbxmesh():
+    """RBXMesh (AGPL) parses old .mesh versions; downloaded into the user's engine copy, never shipped."""
+    tp = E / 'third_party'
+    if (tp / 'RBXMesh' / 'RBXMesh.py').exists() or (E.parent / 'third_party' / 'RBXMesh').exists(): return
+    z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(RBXMESH, timeout=60).read()))
+    for zi in z.infolist():   # Zip Slip: a compromised archive must not write outside third_party/
+        if zi.filename.startswith(('/', '\\')) or '..' in PurePosixPath(zi.filename).parts: raise SystemExit(f'RBXMesh zip has an unsafe member: {zi.filename}')
+    z.extractall(tp); (tp / 'RBXMesh-main').rename(tp / 'RBXMesh'); print('RBXMesh ->', tp / 'RBXMesh')
+
+
+def collect_hair():
+    rbxmesh(); sys.path.insert(0, str(E / 'third_party' / 'RBXMesh'))
+    for m in missing('hair'): seed(m, 'hair')
+    for m in manifest('hair'):   # repair installs made by the old collector: true shape/texture keys from the manifest,
+        d = A / 'hair' / m.name    # and a mesh with another hair's vertex count is removed so the cache scan replaces it
+        if not (d / 'meta.json').exists(): continue
+        mt, cur = meta(m), json.loads((d / 'meta.json').read_text(encoding='utf-8'))
+        for k in ('verts', 'tris', 'tex_sig', 'tex_size'):
+            if k in mt: cur[k] = mt[k]
+        (d / 'meta.json').write_text(json.dumps(cur, indent=1), encoding='utf-8')
+        if (d / 'mesh.obj').exists() and mt.get('verts'):
+            with open(d / 'mesh.obj', encoding='utf-8', errors='replace') as f: n = sum(1 for ln in f if ln.startswith('v '))
+            if n != mt['verts']: (d / 'mesh.obj').unlink(); print('WRONG MESH (replacing)', m.name, n, 'verts, want', mt['verts'])
+    import hair_studio; hair_studio.collect('log')
+    hair_studio.scan_cache([A / 'hair' / m.name for m in manifest('hair') if (A / 'hair' / m.name / 'meta.json').exists()])   # already-cached hairs
+    from hair_fetch import asset, mesh_to_obj   # last fallback: the public endpoint (answers 401 for most UGC hairs)
+    from outfit_fetch import thumb
+    import gzip
+    for m in missing('hair'):
+        d = A / 'hair' / m.name; mt = meta(m); mid = re.sub(r'\D', '', mt.get('mesh_id') or '')
+        if not mid or (d / 'mesh.obj').exists(): continue
+        try:
+            b = asset(mid); b = gzip.decompress(b) if b[:2] == bytes((0x1f, 0x8b)) else b
+            mesh_to_obj(b, d / 'mesh.obj')
+            tid = re.sub(r'\D', '', mt.get('tex_id') or mt.get('colormap') or '')
+            if tid and not (d / 'tex.png').exists(): (d / 'tex.png').write_bytes(thumb(tid))
+            print('HAIR (public)', m.name)
+        except Exception as e: print('NOMESH (public too)', m.name, str(e)[:60])
+    from PIL import Image   # cache had only a low-res copy of the texture -> the public thumbnail (some originals came from there)
+    for m in manifest('hair'):
+        d = A / 'hair' / m.name; mt = meta(m); tid = re.sub(r'\D', '', mt.get('tex_id') or mt.get('colormap') or '')
+        if not (tid and mt.get('tex_size') and (d / 'tex.png').exists()) or Image.open(d / 'tex.png').size == tuple(mt['tex_size']): continue
+        try:
+            b = thumb(tid); w = Image.open(io.BytesIO(b)).size
+            if w[0] * w[1] > Image.open(d / 'tex.png').size[0] * Image.open(d / 'tex.png').size[1]: (d / 'tex.png').write_bytes(b); print('TEX (public thumb)', m.name, w)
+        except Exception as e: print('TEX low-res kept', m.name, str(e)[:60])
+    unseed('hair'); status()
+
+
+def collect_anims(files):
+    want = {m.name: m for m in manifest('anims')}
+    for fn in files:
+        t = Path(fn).read_text(encoding='utf-8', errors='replace').strip()
+        try:   # the MCP saves big results as [{"type": "text", "text": "<the JSON>"}]
+            w = json.loads(t)
+            if isinstance(w, list): t = ''.join(x.get('text', '') for x in w if isinstance(x, dict))
+        except ValueError: pass
+        i = t.find('{')
+        if i < 0: print('FAIL', s if (s := fn) else fn, 'no JSON in the saved MCP result'); continue
+        t = t[i:]; d, _ = json.JSONDecoder().raw_decode(t)
+        for s, a in d.items():
+            if s not in want: print('SKIP unknown', s); continue
+            if a.get('refused') or re.search(r'permission|authoriz|denied|\b40[13]\b', str(a.get('err') or ''), re.I):
+                sys.path.insert(0, str(E)); import anims as an_; sub = an_.STAND_IN.get(s)
+                print(f'REFUSED {s}: Roblox gives this account no permission to load animation {a.get("id")} (not a setup error). Optional: '
+                      + (f'stories that ask for it play {sub!r} instead' if sub else 'stories that ask for it play no clip there')); continue
+            if a.get('err') or not a.get('kf'): print('FAIL', s, a.get('err')); continue
+            kf, keys = a['kf'], int(meta(want[s]).get('keys') or 0)
+            if keys and len(kf) > 1.6 * keys: kf = kf[::2] + ([kf[-1]] if (len(kf) - 1) % 2 else [])   # library keeps every 2nd key of baked clips
+            dd = seed(want[s], 'anims'); (dd / 'anim.json').write_text(json.dumps({'kf': kf}, separators=(',', ':')), encoding='utf-8')
+            print('OK anim', s, len(kf), 'keys')
+    status()
+
+
+def collect_set(sid):
+    import rbx_set_import
+    m = next((m for m in manifest('rbxsets') if m.name.startswith(sid + '_')), None)
+    if not m: raise SystemExit(f'set {sid} is not in the manifest')
+    seed(m, 'rbxsets'); rbx_set_import.fetch(sid, m.name.split('_', 1)[1]); status()
+
+
+if __name__ == '__main__':
+    a = sys.argv[1:] or ['status']
+    if a[0] == 'status': status()
+    elif a[0] == 'public': public()
+    elif a[0] == 'jobs': jobs()
+    elif a[:2] == ['collect', 'hair']: collect_hair()
+    elif a[:2] == ['collect', 'anims']: collect_anims(a[2:])
+    elif a[:2] == ['collect', 'set']: collect_set(a[2])
+    else: print(__doc__)

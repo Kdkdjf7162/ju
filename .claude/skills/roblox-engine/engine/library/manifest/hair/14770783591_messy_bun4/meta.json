@@ -1,0 +1,40 @@
+{
+ "tex_id": "http://www.roblox.com/asset/?id=13465521745",
+ "id": "14770783591",
+ "att": [
+  0.01308441162109375,
+  0.4449946880340576,
+  0.18975365161895752,
+  -1,
+  -7.871374663181996e-09,
+  2.2252532971833716e-07,
+  -7.871374663181996e-09,
+  1,
+  -4.144426331796885e-16,
+  -2.2252532971833716e-07,
+  -2.1660229118398034e-15,
+  -1
+ ],
+ "mesh_id": "rbxassetid://14756605133",
+ "name": "Two-Tone Clipped Messy Hair Bun",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  1.7947251796722412,
+  1.6168975830078125,
+  1.8067970275878906
+ ],
+ "size": [
+  1.7947251796722412,
+  1.6168975830078125,
+  1.8067970275878906
+ ],
+ "source": "studio",
+ "verts": 6277,
+ "tris": 3436,
+ "tex_sig": "YhIQYRANYRANYRANYRANYRANYRANYhQSYi0sYUA+X0VCYUdEY0hGXkZEXkZEXkZDZhMTZhEOZxIQZhEOZhEOZhEOZhEOahcTfUVBhWFdjnBslHNvlXZyiGtniW1lkHJseB0ccxgVdRkXdBgVdRkWcxgVdRgWeiEcpGpjtpGIyqui0bCo0bGpvqGaxaecz66mjSgnhSAeiCMhgx4chSEfgyAehiEeiiglv4J72rmv7tLI8tXL8NXL5Mi/69HF79PJkiwriiMgjygliCIfiiQiiiMgjSUikC0rxoqE6czC+N/V++HW+eHX8tvS9d/V99/WjCYlhR8diyQjhB8dhyIghyEfiyQhjCwpw4eB6ci/8tbM89jM89nO8tnN9NnO9NnNfx4cehgXfx0behoYfh0afRwagh8dgycmvYB55cG0682/683A7M/D7tDE79HF7dDDchcWbhMRcxgVcBYSchcVcRcWdBkYeSMhuHxz476w6sy+682+687B7s7D79DE7M/CbxcWbBQRcBgWbRUSbxcVbRUUbhYVdiEet3tz472y683B687A7M/C7c/C79DE7M/Cdx0bdBkXeR4cdRoXdxsYdhkXdhkYeyMgun945cC37tDE7tHF7tLG7tLE7tHF7M/ChiUkfx4bhyQjgR4dgyAegyEfgx8fhCgmwoR868i+9NjN89nO9NvP9NnM9NjN8dbLjignhiAekSkohyIgiSMhiSUjiSMijCwqx4mC8dDF+d/V+ODV+OLX+N/V+uHX993Tiicmgx8cjignhCAehSEghyMihyMhjCwqxYZ/7s3C9drP9NnO9tvR9trQ99vR8NXMfiEfeBsYgCEfehsYeRsZehwaexwbgicktXZv3Let38C14L+14sG44sG45MG32rmwcBgWbBUScBgWbBUSbBQSbBUSbRUSdB4bm19Zv5WMwZ2Uwp+WxKCYxKCYx6CXu5qQaRUTZxIQaBMRZhEQZxIQaBIQZxIQbRkWjVJLrYJ6romBromBsYyEs42Es4yDqYZ/",
+ "tex_size": [
+  60,
+  60
+ ]
+}

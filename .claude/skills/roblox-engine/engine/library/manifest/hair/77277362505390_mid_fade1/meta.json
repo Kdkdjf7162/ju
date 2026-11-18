@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://83423779015902",
+ "id": "77277362505390",
+ "att": [
+  0.0010051727294921875,
+  0.21422243118286133,
+  -0.06429624557495117,
+  1,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  1
+ ],
+ "mesh_id": "rbxassetid://140521390845351",
+ "name": "Accessory (Meshes/bnza slickback  hair w one downAccessory)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  1.3847548961639404,
+  1.100013017654419,
+  1.47865891456604
+ ],
+ "size": [
+  1.3847548961639404,
+  1.100013017654419,
+  1.47865891456604
+ ],
+ "source": "studio",
+ "verts": 5364,
+ "tris": 3002,
+ "tex_sig": "zo9qzY5oyIpntn5ev4Vgy45oy45ozY5qkGRMKh4XBwYFGRAQkWRMzY5qy45oy45ozo5qs3xdWj8xKx8ZTjcpqndXyo1ny4xpUDgqCAYEAQAAAwIDTzYpx4pny45oy45ovIJiUDkuEA4PDAwMCwsKPi0itH5cxolmPCofAQEBAAAAAAAAGhINqnZXy45oy45oi2FJFxQSFhUWFBQUERERERAPgltFxYpmNyYbAAAAAAAAAAAABQQDgltCy45oy45ojmNKGhcUHR0dGhoaGRgZFxYVglxGxoplPywfAAAAAAAAAAAACAYEjWJHy45oy45osHpcKSAbFBQUExMTFBQUHBkXnW5TyItmSDIlAQAAAAAAAAAAKx4WsXtay45oy45owYVlPy0jCQkJCgoKDAwMMCUfsn1cxolmXUAxBQICAAAADQoHflhBx4pny45oy45oy41ohl1FFREMAgUCCwsHd1Q+nW1PUDcpGBAMAQAAAAAABwUDKRwVY0Uzsnxdy45oy45oxIljlWhLaks2fFhBlWdLKBwUAAAAAAAAAAAAAAAAAAAAAAAABgUEaUo4yY1ny45oy45oy41orXhZqnZaiF5JHRMPCgcFGxINGhEMDQgGAwICAAAAAQAAVz0tyIxmy45oy45oy45onm9Sa0s5xIlljGFJelU/jWJIiF5GcU45RTAjFxELAgIBNyYcv4Rjy45oy45oy45otH5dWUAwwohjzI5py45pyY5pxoxnxIhjsnxafVdANSUbGxMNmWtQy45oy45oy45ornpZUT0tvodiy45oy45oy45oy45oy45oy45owohnnG1SXkEwelZBy45oy45oyoxocE47Y0U1yIxny45oy45oy45oy45oy45oy45oyo1oyItornlbeFVAy45oy45ox4tmlGhNt39ey45oy45oy45oy45oy45oy45oy45oy45ozI5pyIxotYBey45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45oy45o",
+ "tex_size": [
+  52,
+  44
+ ]
+}

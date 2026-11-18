@@ -53,3 +53,19 @@ El origen de cada una está en `.claude/skills-sources.tsv`. Para instalar las h
 | skillui | Genera un sistema de diseño a partir de una web | `npx skillui` |
 | ClaudeAnimationBase | Kit de inicio para animación pintada a mano (p5.js) | `git clone https://github.com/JohnHeibel/ClaudeAnimationBase` |
 | Notion | Conector de claude.ai | Ajustes → Conectores |
+
+## Agregadas después (shorts animados y video con IA)
+
+| Skill | Para qué |
+|---|---|
+| `shorts-animados-3d` | Shorts tipo caricatura 2D en mundo 3D (three.js + Remotion) o realistas en Blender. En español. Reemplaza a `claude-animated-shorts`. |
+| `claude-3d-animated-shorts` | Personajes 3D redondos (estilo RicksClips), parecido al video de "Chuy" |
+| `roblox-engine` | Shorts estilo Roblox en Blender (necesita Blender; ideal en tu PC con la 5070 Ti) |
+| `minecraft`, `low-poly`, `stick-figure`, `zach-d-films`, `kurzgesagt`, `map-route`, `breakdown`, `graph`, `dan-koe`, `minimalistic-graphics` | 10 estilos de animación para reels (artemnovitckii). Comparten la carpeta `.claude/kit` |
+| `motion-styles` | 74 estilos de explicador animado (pizarrón, acuarela, manga, Game Boy…) |
+| `line-art-animation` | Animaciones de dibujo a tinta (personas que caminan, pueblos, día/noche) |
+| `faceless-channel-recreator` | Copia el **formato** de un canal faceless que está pegando, con tus historias (usa el conector Higgsfield) |
+| `cinematic-director` | Director para video con IA: guion técnico, tomas, prompts de imagen/video |
+| `seedance-prompt-en` | Prompts para Seedance 2.0 (el modelo de video que usa Higgsfield) |
+
+Lista curada de 180 repos de skills de video con nota de seguridad: `docs/referencias/awesome-claude-video-skills.md`.

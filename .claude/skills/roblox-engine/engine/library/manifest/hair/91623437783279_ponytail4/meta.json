@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://109097945388098",
+ "id": "91623437783279",
+ "att": [
+  -0.064056396484375,
+  1.1380000114440918,
+  -0.10291290283203125,
+  1,
+  7.871375551360416e-09,
+  -4.371138473402425e-08,
+  -7.871375551360416e-09,
+  1,
+  -4.144426067099089e-16,
+  4.371138473402425e-08,
+  7.585113338817663e-16,
+  1
+ ],
+ "mesh_id": "rbxassetid://130132333641936",
+ "name": "Accessory (Igari Side Ponytail Hair w Green Bonnet)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  1.9287760257720947,
+  3.219386100769043,
+  1.5939290523529053
+ ],
+ "size": [
+  1.9287760257720947,
+  3.219386100769043,
+  1.5939290523529053
+ ],
+ "source": "studio",
+ "verts": 7490,
+ "tris": 3997,
+ "tex_sig": "6+vr7e3t6+vr7u7u7+/v7e3t7Ozs6+vr6enp7+7u8/Lo+PXx+/D0+Obw+u70/vH47u7u7+/v7e3t7+/v8PDw7+/v8PDw8fHx7+/v8PDt7Oze9Ovn++71+uTu++ju7fLr8/Pz8/Pz8/Pz8/Pz9PT08/Pz9vb2+fn59fb17vDn5ufN9uzo/PD3+eXt2ufTtfrF9vb29vb29/f3+Pj4+Pf49/f3+/v7/f39+fj59O/u8uXd+u3v/O72+Ozv3vPR4OPQ9/f39vb2+Pj4+Pj4+Pj4+Pj4+/v7/fz9+fj57/Dm5efN/Ofs/Ojw/uzy/vDZ/tvT9fX19PT09vb29/b39vf29vb2+fj4+/j49vX19O3q6eLO+t/k+eTs/O/1++/b/uDc8vLy8fHx8fHx8/Pz8/Tz8vLy9PPz9/Lz8/Dx8Ozp6efR++jr++zx+vD1+e3w+uvx8fHx7+/v7u7u8vLy8fHx8O/v8uzu9Orr8urr6+jc5erG9/Lq9vLu8O/h5+fP8+vq8/Pz8PDw7+/v8/Pz8vLy8PDw8ejp8+Hk8uPk7Obb5urG8fLh6OnT5+nO6ejS8vDs9vb28/Pz8/Pz9fX19PT08vLy8uTm89jd89vf8+Lg6+LK1eGt5eXL8Ozj6OrV7+zi+Pj49vb29vb29vb29fb19fT19uDl9dLZ9tbc8d7W6+TP7ObS6urU8e3i5OjG5OTM+fn59/f39/f39/f39vb29fX1+d/i+9DX+9Tb9tbY6+DW7ufZ4eW96+nQ7OjY4uHO9/f39vb29PT09fX19PT09PPz+Nvg/MzU+8/W+dTX49zO1tm75OTC8ezd7+ri3tvE8/Pz8fHx7u7u8fHx8fHx8O/v8tPa9cPM9cPM78LH18Kz3dPC6eXV6ObO3uO+y9aW7u7u6urq5+fn7Ozs7e3t6enp6cvR6rW+7LfA6LW53bys1cWz2Ne8yt6XxNyJx9+K6+vr5+fn4+Pj6enp6urq5+Xl5sHG5rfA8NDW4Kuzt5aFoJ53tsiPwdiHxd6G1uWe",
+ "tex_size": [
+  64,
+  64
+ ]
+}

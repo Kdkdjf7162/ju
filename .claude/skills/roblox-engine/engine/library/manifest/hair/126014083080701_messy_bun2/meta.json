@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://123822308708510",
+ "id": "126014083080701",
+ "att": [
+  -0.025564512237906456,
+  0.30658769607543945,
+  -0.2493097484111786,
+  1,
+  7.871375551360416e-09,
+  3.029981271446139e-15,
+  -7.871375551360416e-09,
+  1,
+  -4.1444258024012927e-16,
+  -3.029981271446139e-15,
+  4.1444255377034967e-16,
+  1
+ ],
+ "mesh_id": "rbxassetid://128460728412542",
+ "name": "Accessory (defaultAccessory)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  1.7579989433288574,
+  2.7663307189941406,
+  1.9146230220794678
+ ],
+ "size": [
+  1.7579989433288574,
+  2.7663307189941406,
+  1.9146230220794678
+ ],
+ "source": "studio",
+ "verts": 7289,
+ "tris": 3827,
+ "tex_sig": "L3GLNXSMLnGJKGuDLW+HMnSMK2+HL3KKKWyEImd/LG+HLnKLMXWOR4WeQH6WNHSOZZ21b6a7b6e9aKG3bKa8c6vCaqK6bKS7Z6G4XJmwaqK5aKG3aKK4gbfOfLLJda3Dos7gu+PvxefyveLvvuXwxujzs9zsrtnqstzrqtbnueDurtnopNHhx+r0webyuuLvsdjn3Pf85Pv+3vj73Pj85Pr+0O/5w+j3zPD6ze/52/b8z/D3v+Tv3/n93/b83fn9odDiyez50vL60fH5ye330fL6vub0qNfsrNrtuuPzyOz5wun3uuPxyu34y+751PX8jMDXqdfqsNzvtuHzqtnssN3vn9Hkj8TZj8PYn9HmqdjtrdvurdruqtfqrdrsuuX1eLHHkMPalsjfodLnlcnelsrgjL/Ve7HHebDFjMDWlMffm8/koNHnksXalMjdodLocarBg7fOir3UlMffjMDXjsHWgrbNcqrBbaa9frTLir7Uk8bdlcjghrzRi8HWm83icKnAgbbNiLzTksXcir/WjcDWgbXLcanAa6S8fLLJiLzSkcTalMbdhbvRir/Wmszie7HJi77VksXbm83ik8fclMfdhrvSd67Fc6vCgbfNjcHWlMbelcjfjsPYksXcoNHnlcbdrtvtt+HwuOLysNzuteDxotDlkMPajcHYlcjeotLno9PooNHlotTmptbos97wp9Tjz/H62fb80/P6zfD61fT7veTypNTqpdTpqdfrt+H0sd7yq9vut+HzuOHzwur5p9Tj0fL73Pj81/X70vP72vf8w+j0q9ntrdrus9/xwej4ueLzsd3vveX1vuX1yfD4nc3iwen3ze/6zPD6x+z30PL6u+TxpNToptXpsd7wv+f2ueP0st/vvOX0veb1yvD4jsHZqdfstN/yuOP1s97vueT0qNfrlsjfl8rgpdXptN/xst7xrdvust7xtuD0w+v4hbjQmMrhoNDmqdfso9LnptXqmMvgib/Wib/Vl8vgpNTpptbrptXqpdXqqtjsuOP0",
+ "tex_size": [
+  60,
+  64
+ ]
+}

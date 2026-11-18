@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://93503248087157",
+ "id": "110445503257331",
+ "att": [
+  -0.009796142578125,
+  0.17172813415527344,
+  0.17739105224609375,
+  -1,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  -1
+ ],
+ "mesh_id": "rbxassetid://133030866689019",
+ "name": "Accessory (MeshPartAccessory)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  50,
+  45.1173095703125,
+  44.912357330322266
+ ],
+ "size": [
+  2.5,
+  2.2558655738830566,
+  2.2456178665161133
+ ],
+ "source": "studio",
+ "verts": 11000,
+ "tris": 3809,
+ "tex_sig": "8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ8sjZ6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN6rrN1qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS11qS1vY6cvo6dvo6dvo+dwJCfvo+dvo6dvo6dvY6cvo6dvo+dwJCfvo+dvo6dvo+dwJCfqH2Hqn+Jqn+Jqn+JrIKLq3+Kq3+Kqn+JqX6Iq4GKrIGLrIGLq3+Kqn+JqX+IrIGLlHB1mHR4mXV4mXV4nHZ7mHN4mXR4mXV4mHN3mXV4mXV4mnV5mHN3mXV4mXV4mnV5gGJjh2hoh2loiGlojWxsiGppimpqiWlohWhni2pqimppi2trh2loiWlpi2tqjGxrc1pWemBdemBeemBdgWVhe2FefGFfe2Fed15afWJffmJff2RfeF5bfGFefWJff2Vga1dQc11Wc1xWclxWeWFbc11XdF1XcltWblpUdV9ZdV5Ydl5YbVhTclxWdF1XeF9ZalZPcVxVclxVcVtVd2FZcl1UclxVb1pUbFlScl5WclxVclxVa1dQb1lScVtUdF1Wa1dQdF1WdV9XdF9WeGNYc15Uc11WcVxUb1tTdWBWc11Vc15VbFlRcFtSclxUdF9WcV1Td2FXeGJXd2FXemRZdWFXd2FXdmBWdV9VeGJXdmBWd2FWcVxUdV9VdmBVeGJYcl5Ud2JXeGJXeGJXemRad2JXeGNYdmFXdmBWeWNZeGFYeGJYdF9Wd2FXd2FYemRablpRdF9WdF9WdV9WeWNZdWFXdWFWcl1VclxTd2FXdWBXdWBWb1tSc19WdWBWeWJYZ1RMb1tRb1pScFtUdWBXcV1TcVxSblpRbFlRcV1UcVxTcV1UaVZOblpScFtSc15VZlNLbVlQbllQbVlRcl1Ub1pRbVlQbFhPalhQbltSblpQblpRZlRNbFlRblpQcVxS",
+ "tex_size": [
+  64,
+  64
+ ]
+}

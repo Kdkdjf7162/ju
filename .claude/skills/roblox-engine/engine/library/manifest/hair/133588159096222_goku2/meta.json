@@ -1,0 +1,40 @@
+{
+ "tex_id": "rbxassetid://135462697098800",
+ "id": "133588159096222",
+ "att": [
+  -0.0001678466796875,
+  -0.4975404739379883,
+  0.3679313659667969,
+  -1,
+  1.499759904157988e-32,
+  8.742277657347586e-08,
+  1.499759904157988e-32,
+  1,
+  0,
+  -8.742277657347586e-08,
+  0,
+  -1
+ ],
+ "mesh_id": "rbxassetid://91516835149068",
+ "name": "Accessory (Goku Hair)",
+ "att_name": "HairAttachment",
+ "kind": "meshpart",
+ "msize": [
+  2.8199920654296875,
+  2.9528002738952637,
+  3.1868972778320312
+ ],
+ "size": [
+  2.8199920654296875,
+  2.9528002738952637,
+  3.1868972778320312
+ ],
+ "source": "studio",
+ "verts": 5622,
+ "tris": 2474,
+ "tex_sig": "6r6d27SS4bqX4reYuIyAXUBKX0xUUE1XICMoJCUsQkZVZ25/XGV0FxsdCAgKGhsh6r2d2K+QnoFqoINuvp2MnoyUjIWKRkhPLTM7FBUaLDE6REpVUFhlIyouGB4hMzpC8sWh78Ogz6mL1q+QspaBeHh5bnNzKy8wHiIoAwQFFBcbLTQ8LjQ7JiswNz5GOkNM6b+b98ql98ml8cOhmXZnMx8oNio0JCIkDA0PBQYGBgcIDxMWGh4iExQXPkFLQkhS4rqX9Mmm88en8MWlx5SFi09kimR8f3VwgH1qjIyLi4uLgoOBgoWFi42OmpqalpeOzamJ27mh1ran0LKmvZSPklxkmm53xr2m+uqk//vp//rm/vnd/f/4/f72/vrq/vK/noNq07mg18SxyrikvqaSi2FclWdswbae9+WT8uGf+uun9OWh+fPV+/XO+Omd/+6fx6aI3L6L3L9zzbdkpJxhgIBsj4eCs6qK8dyE3blg6M925cx127dl6c1848Fk++WK6cGg1biSp5p8dXZlbHZiaHdmbHFqmIlz1rVtzZ5RzqFU2LNkzpxM0qFQ0J1L4blk98ml9sqlrpyLbW9wbHBwam5sam5sj3F/wHWSy2yUy22Vym+Wy26VzG6Vz3GY0HSW7sCf8MWgrJqIb3Fxb3NybXBubXBti26DzmKx0GG00WK0zWCz0GG0z2Cz0WK10WK14LSV7cKetZ6KdnRya21sam1sam1siWaAymSv0WK00WK10WK10WK10WK10WG00WK16Lub8sai6cGeem1iOzw9Ozw9Ozw9X0daxGCswlupy1+x0GK2z2K1yl+wwVqnzGCyyaaK0q2O1rCPdWVXNTY1PD48P0A/WUdUll2JmliKnFqMol6TpGGVrm6frGycp2eZS0lDUU1GUktEQjw6Ozw7YGNhbGxscnBxdXF2c251dnF2dnF2fXV+xr/G2dPYq6WrNzk3OTo5Nzc3ODc3Oj07YWVkcXJxdHV0c3V0cXRzc3Z3c3Z1fH+BycjL3dzdq6yr",
+ "tex_size": [
+  52,
+  52
+ ]
+}
