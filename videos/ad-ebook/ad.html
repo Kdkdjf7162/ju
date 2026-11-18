@@ -123,20 +123,20 @@ function render(t, f) {
   $('dots').style.transform = `translate(${(t * 6) % 44}px,${(t * 4) % 44}px)`;
   grain(Math.floor(f / 2));
   // ===== S1: gancho
-  const s1out = prog(t, 2.85, 3.3, eIn);
-  S($('t1'), { y: 300 - s1out * 40, o: 1 - s1out }); wordAnim(T1, t, .05, 2.85);
+  const s1out = prog(t, 2.6, 2.95, eIn);
+  S($('t1'), { y: 300 - s1out * 40, o: 1 - s1out }); wordAnim(T1, t, .05, 2.6);
   const cnt = prog(t, .35, 1.75, bez(.3, 0, .2, 1));
   $('amt').textContent = money(200000 * cnt);
   // el número sube a la cabecera y queda como "chip" de contexto
-  const toTop = prog(t, 2.9, 3.5, eIO), amtOut = prog(t, 7.7, 8.1, eIn);
+  const toTop = prog(t, 2.85, 3.4, eIO), amtOut = prog(t, 7.7, 8.1, eIn);
   S($('amt'), { y: L(430, 70, toTop), s: L(1, .5, toTop) * (1 + .05 * Math.sin(clamp((t - 1.7) / .35) * Math.PI)), o: prog(t, .2, .5) * (1 - amtOut) });
   S($('amtSub'), { y: L(650, 196, toTop), o: prog(t, 1.4, 1.9) * (1 - prog(t, 2.9, 3.2, eIn)) });
   const tk = prog(t, .3, 2.7, bez(.4, 0, .6, 1)), tkOut = prog(t, 3.0, 3.6, eIn);
   $('ticketWrap').style.height = (40 + 900 * tk) + 'px';
   S($('ticketWrap'), { x: 220, y: 780 + tkOut * 1200, r: -2 + tkOut * 8, o: tk > 0 ? 1 : 0 });
   // ===== S2: en qué se fue
-  const t2out = prog(t, 5.95, 6.35, eIn);
-  S($('t2'), { y: 380 - t2out * 30, o: (t >= 3.15 ? 1 : 0) * (1 - t2out) }); wordAnim(T2, t, 3.15);
+  const t2out = prog(t, 5.8, 6.15, eIn);
+  S($('t2'), { y: 380 - t2out * 30, o: (t >= 3.3 ? 1 : 0) * (1 - t2out) }); wordAnim(T2, t, 3.3, 5.8);
   ITEMS.forEach((it, i) => {
     const a = 3.55 + i * .36, k = pop(t, a, .55), [sx, sy] = slot(i);
     const hl = it[4] ? prog(t, 6.0, 6.4) : 0, dim = it[4] ? 0 : prog(t, 6.0, 6.4);
