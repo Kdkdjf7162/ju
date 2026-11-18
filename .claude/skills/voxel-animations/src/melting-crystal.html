@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Melting Crystal — a voxel picture of melting</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- VOXEL_KIT -->
+<script>
+// A 6×6×6 ice crystal on a stone slab. Each block is an "atom" shaking around its
+// lattice site with amplitude A = 0.1·sqrt(T/Tm) (equipartition: <x²> ∝ T).
+// Lindemann criterion: the solid melts when A reaches ~10% of the spacing, i.e. T = Tm.
+// Above Tm, atoms with fewer bonds (corners, edges) leave first, unsupported atoms fall,
+// melt water slides off the crystal and spreads into a puddle. Cooling refreezes the
+// puddle, but as a flat, disordered sheet: not the crystal you started with.
+const V3 = THREE.Vector3;
+const app = VK.createApp({
+  title: 'MELTING CRYSTAL', subtitle: 'Lindemann: melts when atoms shake ~10% of spacing',
+  sky: 'studio', camera: { radius: 21, phi: .52, target: [0, 3, 0], autoSpeed: .1 }, fileName: 'melting-crystal',
+});
+VK.platform(app, { size: 18, top: .5, mat: 'stone', topMat: 'cobble' });
+const R = app.rand, N = 6, H = N / 2, FLOOR = .5, ATOM = .86, TMAX = 1.6;
+const iceM = app.M.ice, waterM = app.M.water;
+
+// ---- thermometer (no text needed on screen): bulb + glass tube + red column + melting-point marks
+const TX = 7.5, TZ = -7.5, TUBE = 7;
+VK.instanced(app.scene, app.M.glass, Array.from({ length: TUBE }, (_, i) => [TX, 2 + i, TZ]), { cast: false });
+VK.block(app, VK.solid(0xd8342c), TX, 1, TZ);
+const column = new THREE.Mesh(VK.BOX, VK.solid(0xd8342c, { glow: true, border: false }));
+column.scale.set(.4, .01, .4); app.scene.add(column);
+const markY = 1.5 + TUBE / TMAX;                                   // T = Tm
+[-1, 1].forEach(s => { const m = new THREE.Mesh(VK.BOX, VK.solid(0xffffff, { glow: true })); m.scale.set(.5, .12, .12); m.position.set(TX + s * .75, markY, TZ); app.scene.add(m); });
+
+// ---- crystal
+let atoms = [], grid = new Map(), puddle = new Map();
+const key = (i, j, k) => i + ',' + j + ',' + k;
+function build() {
+  atoms.forEach(a => app.scene.remove(a.m));
+  atoms = []; grid.clear(); puddle.clear();
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) for (let k = 0; k < N; k++) {
+    const home = new V3(i - H + .5, FLOOR + .5 + j, k - H + .5);
+    const m = new THREE.Mesh(VK.BOX, iceM); m.castShadow = m.receiveShadow = true; m.position.copy(home); m.scale.setScalar(.001);
+    app.scene.add(m);
+    const a = { m, i, j, k, home, ph: [R() * 6.28, R() * 6.28, R() * 6.28], state: 'solid', v: new V3(), age: -(j * 0.09 + (i + k) * 0.012) };
+    atoms.push(a); grid.set(key(i, j, k), a);
+  }
+}
+const solidAt = (i, j, k) => { const a = grid.get(key(i, j, k)); return a && a.state === 'solid'; };
+const bonds = a => [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].filter(([x, y, z]) => solidAt(a.i + x, a.j + y, a.k + z)).length;
+function columnTop(x, z) {               // top surface of the remaining solid under (x, z), or null
+  const i = Math.floor(x + H), k = Math.floor(z + H); if (i < 0 || k < 0 || i >= N || k >= N) return null;
+  for (let j = N - 1; j >= 0; j--) if (solidAt(i, j, k)) return FLOOR + 1 + j;
+  return null;
+}
+function puddleCell(x, z) {              // lowest free cell near (x, z), outside the remaining crystal
+  let best = null, bs = 1e9;
+  for (let dx = -4; dx <= 4; dx++) for (let dz = -4; dz <= 4; dz++) {
+    const cx = Math.floor(x) + .5 + dx, cz = Math.floor(z) + .5 + dz;
+    if (Math.abs(cx) > 8.5 || Math.abs(cz) > 8.5 || columnTop(cx, cz) !== null) continue;
+    const lvl = puddle.get(cx + ',' + cz) || 0, sc = lvl * 6 + Math.hypot(dx, dz);
+    if (sc < bs) { bs = sc; best = [cx, cz, lvl]; }
+  }
+  return best;
+}
+
+// ---- temperature program
+let T = .15, target = .15, auto = true, prog = 0;
+function autoProgram(dt) {
+  prog += dt; const solid = atoms.filter(a => a.state === 'solid').length;
+  if (prog < 2.5) target = .15;
+  else if (prog < 16) target = .15 + (TMAX - .2 - .15) * (prog - 2.5) / 13.5;
+  else if (solid > 0 && prog < 30) target = TMAX - .2;
+  else { if (!autoProgram.coolAt) autoProgram.coolAt = prog; target = .2;
+         if (prog - autoProgram.coolAt > 8) { prog = 0; autoProgram.coolAt = 0; T = target = .15; build(); } }
+}
+
+app.onUpdate((dt, time) => {
+  if (auto) autoProgram(dt);
+  T += auto ? (target - T) * Math.min(1, dt * 3) : VK.clamp(target - T, -.3 * dt, .3 * dt);
+  column.scale.y = Math.max(.01, TUBE * T / TMAX); column.position.set(TX, 1.5 + column.scale.y / 2, TZ);
+
+  const A = .1 * Math.sqrt(T), w = 22;
+  for (const a of atoms) {
+    if (a.state === 'solid') {
+      a.age += dt; const s = a.age < 0 ? .001 : ATOM * VK.ease.outBack(Math.min(1, a.age / .25));
+      a.m.scale.setScalar(Math.max(.001, s));
+      a.m.position.set(a.home.x + A * Math.sin(w * time + a.ph[0]), a.home.y + A * Math.sin(1.13 * w * time + a.ph[1]), a.home.z + A * Math.sin(.87 * w * time + a.ph[2]));
+      if (a.age < .25) continue;
+      const unsupported = a.j > 0 && !solidAt(a.i, a.j - 1, a.k);
+      const p = T > 1 ? .22 * (T - 1) * (1 + 1.4 * (6 - bonds(a))) * dt : 0;
+      if (unsupported || R() < p) {
+        a.state = 'free'; const out = new V3(a.home.x, 0, a.home.z).normalize();
+        a.v.set(out.x * 1.2 + (R() - .5), 1 + R(), out.z * 1.2 + (R() - .5));
+      }
+    } else if (a.state === 'free') {
+      a.v.y -= 20 * dt; a.m.position.addScaledVector(a.v, dt); a.m.rotation.x += dt * 3;
+      const top = columnTop(a.m.position.x, a.m.position.z);
+      if (top !== null && a.m.position.y - .43 < top && a.v.y < 0) {            // slide off the crystal
+        a.m.position.y = top + .43; a.v.y = 0;
+        const out = new V3(a.m.position.x, 0, a.m.position.z).normalize(); a.v.x += out.x * 6 * dt; a.v.z += out.z * 6 * dt;
+        if (Math.hypot(a.v.x, a.v.z) < .8) { a.v.x = out.x * .8; a.v.z = out.z * .8; }
+      } else if (a.m.position.y - .43 <= FLOOR) {                                 // hits the slab: becomes liquid
+        const c = puddleCell(a.m.position.x, a.m.position.z);
+        if (!c) { a.state = 'gone'; app.scene.remove(a.m); continue; }
+        puddle.set(c[0] + ',' + c[1], c[2] + 1);
+        a.state = 'liquid'; a.m.material = waterM; a.m.rotation.set(0, 0, 0);
+        a.from = a.m.position.clone(); a.to = new V3(c[0], FLOOR + .25 + c[2] * .5, c[1]); a.flow = 0;
+        app.puff(a.m.position, waterM, 3, 1.6, .4);
+      }
+    } else if (a.state === 'liquid' || a.state === 'frozen') {
+      if (a.flow < 1) { a.flow = Math.min(1, a.flow + dt * 3.5); const e = VK.ease.out(a.flow); a.m.position.lerpVectors(a.from, a.to, e); a.m.scale.set(.98, VK.clamp(.86 - .36 * e, .5, .86), .98); }
+      if (a.state === 'liquid' && T < .6 && R() < dt * 1.5) { a.state = 'frozen'; a.m.material = iceM; }
+      if (a.state === 'frozen' && T > 1 && R() < dt * 2) { a.state = 'liquid'; a.m.material = waterM; }
+    }
+  }
+  const solid = atoms.filter(a => a.state === 'solid').length;
+  app.status(`T/Tm ${T.toFixed(2)}<br>solid ${solid}/${N * N * N}`);
+});
+
+app.standardButtons({ cycle: false });
+const setAuto = on => { auto = on; autoBtn.classList.toggle('on', on); if (!on) target = T; };
+const autoBtn = app.button({ label: 'AUTO', key: 'a', onClick: () => setAuto(!auto) }); autoBtn.classList.add('on');
+app.button({ label: 'HEAT', key: 'arrowup', onClick: () => { setAuto(false); target = Math.min(TMAX, target + .25); } });
+app.button({ label: 'COOL', key: 'arrowdown', onClick: () => { setAuto(false); target = Math.max(0, target - .25); } });
+app.button({ label: 'RESET', key: 'r', onClick: () => { prog = 0; autoProgram.coolAt = 0; T = target = .15; build(); } });
+build();
+app.start();
+</script>
+</body>
+</html>

@@ -69,3 +69,7 @@ El origen de cada una está en `.claude/skills-sources.tsv`. Para instalar las h
 | `seedance-prompt-en` | Prompts para Seedance 2.0 (el modelo de video que usa Higgsfield) |
 
 Lista curada de 180 repos de skills de video con nota de seguridad: `docs/referencias/awesome-claude-video-skills.md`.
+
+## Agregadas el 18/11 (animación a código, estilo Minecraft)
+
+`voxel-animations`, `3dixel`, `code-cinema`, `what-if-video` y 13 skills de principios de animación (squash & stretch, anticipación, timing…). Guía completa con repos, librerías, conectores, canales y documentos: `docs/referencias/animacion-a-codigo-recursos.md`.

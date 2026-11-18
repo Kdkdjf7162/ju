@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My voxel scene</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- VOXEL_KIT -->
+<script>
+// Starting point for a new scene. Replace the SCENE section; keep the rest.
+const V3 = THREE.Vector3;
+const app = VK.createApp({
+  title: 'MY SCENE', subtitle: 'one line about it',
+  sky: 'day',                     // 'day' | 'night' | 'studio'
+  camera: { radius: 30, phi: .5, target: [0, 2, 0] },
+  fileName: 'my-scene',
+});
+const world = VK.island(app, { seed: 7, trees: 8 });          // or: VK.platform(app, { size: 16 })
+const hero = VK.character(app, { ground: world.groundTopAt, position: [5, 0, 5] });
+
+// ---------------------------------------------------------------- SCENE
+// A tiny timeline: every 0.35 s a block pops onto a tower, the builder walks
+// a loop, and the tower resets after 12 blocks.
+const tower = [];
+const loop = [[5, 5], [-5, 5], [-5, -5], [5, -5]];
+let nextWaypoint = 0, timer = 0;
+app.onUpdate(dt => {
+  timer += dt;
+  if (timer > .35) {
+    timer = 0;
+    if (tower.length >= 12) { tower.forEach(o => app.scene.remove(o)); tower.length = 0; }
+    const types = ['stone', 'brick', 'planks', 'glass'];
+    tower.push(VK.block(app, types[tower.length % types.length], 0, 1 + tower.length, 0, { pop: true }));
+  }
+  if (hero.arrived) { hero.goTo([loop[nextWaypoint]]); nextWaypoint = (nextWaypoint + 1) % loop.length; }
+  hero.lookTarget = tower.length ? tower[tower.length - 1].position : null;
+  app.status(`${tower.length} blocks`);
+});
+// ---------------------------------------------------------------- /SCENE
+
+app.standardButtons();
+app.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voxel Builder — a tiny house, block by block</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- VOXEL_KIT -->
+<script>
+// A builder walks around the site and places a house block by block,
+// cheers, the house explodes into bouncing blocks, and it all starts again.
+const V3 = THREE.Vector3;
+const app = VK.createApp({ title: 'VOXEL BUILDER', subtitle: 'a tiny house, block by block', sky: 'day', speed: 2, fileName: 'voxel-builder',
+  camera: { radius: 29, phi: .6, target: [0, 3, 0] } });
+const world = VK.island(app, { seed: 7 });
+const START = [7, 0, 6];
+const hero = VK.character(app, { ground: world.groundTopAt, position: START, yaw: -2.3 });
+const HOUSE = { halfX: 3, halfZ: 2 };
+
+// ---- the build plan: an ordered list of {type, x, y, z}
+function buildPlan() {
+  const p = [], x0 = -3, x1 = 3, z0 = -2, z1 = 2, ring = [];
+  for (let x = x0; x <= x1; x++) ring.push([x, z1]);
+  for (let z = z1 - 1; z >= z0; z--) ring.push([x1, z]);
+  for (let x = x1 - 1; x >= x0; x--) ring.push([x, z0]);
+  for (let z = z0 + 1; z < z1; z++) ring.push([x0, z]);
+  for (let y = 1; y <= 4; y++) ring.forEach(([x, z]) => {
+    const corner = (x === x0 || x === x1) && (z === z0 || z === z1);
+    if (x === 0 && z === z1 && y <= 2) return;                       // door
+    let type = corner || y === 4 ? 'log' : 'planks';
+    if (!corner && (y === 2 || y === 3)) {                            // windows
+      if (z === z1 && Math.abs(x) === 2) type = 'glass';
+      if (Math.abs(x) === x1 && z === 0) type = 'glass';
+      if (z === z0 && Math.abs(x) === 1) type = 'glass';
+    }
+    p.push({ type, x, y, z });
+  });
+  [[5, 4, 3], [6, 3, 2], [7, 2, 1], [8, 1, 0]].forEach(([y, hx, hz]) => {   // stepped roof
+    let row = 0;
+    for (let z = hz; z >= -hz; z--) {
+      const xs = []; for (let x = -hx; x <= hx; x++) xs.push(x);
+      if (row++ % 2) xs.reverse();
+      xs.forEach(x => p.push({ type: 'roof', x, y, z }));
+    }
+  });
+  p.push({ type: 'torch', x: -1, y: 3, z: 2.62 }, { type: 'torch', x: 1, y: 3, z: 2.62 });
+  return p;
+}
+const plan = buildPlan();
+const PLACE_TIME = .24;
+
+let placed = [], step = 0, mode = 'build', modeT = 0, phase = 'walk', t = 0, spawned = false, pathFor = -1, gen = 0;
+
+function spawn(b) {
+  let o;
+  if (b.type === 'torch') { o = VK.torch(app, b.x, b.y, b.z); app.pop(o, .22, false); }
+  else o = VK.block(app, b.type, b.x, b.y, b.z, { pop: true });
+  placed.push(o);
+}
+function reset(full) {
+  gen++;
+  placed.forEach(o => { app.scene.remove(o); o.userData.dispose && o.userData.dispose(); });
+  placed = []; step = 0; mode = 'build'; modeT = 0; phase = 'walk'; pathFor = -1;
+  hero.pose = 'idle'; hero.lookTarget = null;
+  if (full) { hero.pos.set(START[0], 0, START[2]); hero.path = []; app.clearParticles(); }
+}
+function explode() {
+  if (!placed.length || mode === 'explode') return;
+  mode = 'explode'; modeT = 0; hero.pose = 'panic'; hero.lookTarget = null; hero.path = []; hero.jump(8);
+  const objs = placed, g = gen; placed = [];
+  VK.explode(app, objs, {
+    ground: world.groundTopAt,
+    onDone: () => { objs.forEach(o => o.userData.dispose && o.userData.dispose()); if (g === gen) reset(false); },
+  });
+}
+
+app.onUpdate(dt => {
+  modeT += dt;
+  if (mode === 'build') {
+    if (step >= plan.length) {
+      mode = 'celebrate'; modeT = 0; hero.pose = 'cheer'; hero.lookTarget = null;
+      hero.goTo(VK.routeAround(hero.pos, new V3(0, 0, 4.9), HOUSE));
+    } else {
+      const b = plan[step];
+      if (phase === 'walk') {
+        hero.pose = 'idle'; hero.lookTarget = null;
+        if (pathFor !== step) { hero.goTo(VK.routeAround(hero.pos, VK.standOutside(b.x, b.z, HOUSE), HOUSE)); pathFor = step; }
+        if (hero.arrived) { phase = 'place'; t = 0; spawned = false; }
+      }
+      if (phase === 'place') {
+        hero.face(b.x, b.z, dt); hero.pose = 'reach'; hero.lookTarget = b;
+        t += dt / PLACE_TIME; hero.reach = t;
+        if (!spawned && t >= .45) { spawn(b); spawned = true; }
+        if (t >= 1) { step++; phase = 'walk'; }
+      }
+    }
+  } else if (mode === 'celebrate') {
+    if (hero.arrived) { hero.face(hero.pos.x, hero.pos.z + 1, dt); if (modeT < 3.4) hero.jump(5.5); }
+    if (modeT > 4.4) explode();
+  }
+  app.status(mode === 'explode' ? 'BOOM!' : mode === 'celebrate' ? 'DONE!' : `${placed.length}/${plan.length}`);
+});
+
+app.standardButtons();
+app.button({ label: 'RESTART', key: 'r', onClick: () => reset(true) });
+app.button({ label: 'EXPLODE', key: 'e', onClick: explode });
+app.start();
+</script>
+</body>
+</html>
