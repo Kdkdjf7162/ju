@@ -57,7 +57,15 @@ def note(i, base=523.25):                      # Do5 y sube
     return base * 2 ** ((12 * min(o, 2) + PENTA[s]) / 12)
 
 cuts = TL["cuts"]
-put(load("whoosh-fast-soft.wav"), cuts[0] - .03, -17)
+if cuts:
+    put(load("whoosh-fast-soft.wav"), cuts[0] - .03, -17)
+tz = TL.get("tease")
+if tz:                                          # 0 seguidores: el cuchillo baja, se frena y se va sin cortar
+    put(load("drawKnife1.ogg"), tz["in"] + .05, -11, sync="start")
+    put(load("whoosh-slow-soft.wav"), tz["stop"] - .1, -19)
+    for k, f in enumerate((783.99, 659.25, 523.25, 392.0)):   # "nop": cuatro notas que bajan
+        put(glock(f, 1.2), tz["out"] + .02 + .13 * k, -14 - k, sync="start")
+    put(load("whoosh-fast-soft.wav", .85), tz["out"] + .18, -16)
 for i, t in enumerate(cuts):
     fast = i > 0 and t - cuts[i - 1] < .18
     knife = ("knifeSlice.ogg", "knifeSlice2.ogg")[i % 2]

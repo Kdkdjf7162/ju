@@ -2,7 +2,7 @@
 // Parámetros por URL: ?n=12&dia=1&handle=@cuenta. Cada cuadro es una función pura de t.
 (() => {
 const Q = new URLSearchParams(location.search);
-const N = Math.max(1, +(Q.get('n') || 12)), DIA = Q.get('dia') || '1', HANDLE = Q.get('handle') || '';
+const N = Math.max(0, +(Q.get('n') ?? 12)), DIA = Q.get('dia') || '1', HANDLE = Q.get('handle') || '';
 const FPS = 30;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, k) => a + (b - a) * k;
 const bez = (x1, y1, x2, y2) => x => { let lo = 0, hi = 1, s = .5; for (let i = 0; i < 24; i++) { s = (lo + hi) / 2; const bx = 3 * x1 * s * (1 - s) ** 2 + 3 * x2 * s * s * (1 - s) + s ** 3; if (bx < x) lo = s; else hi = s; } return 3 * y1 * s * (1 - s) ** 2 + 3 * y2 * s * s * (1 - s) + s ** 3; };
@@ -13,7 +13,9 @@ const hsh = x => { const s = Math.sin(x * 127.1 + 311.7) * 43758.5453; return s 
 // ---------- línea de tiempo ----------
 const A = 1.9, B = 1.28, Y0 = 0.3, TOP = -2.3, YAW = -0.7;
 const NP = Math.min(N, 40);                       // planos de corte visibles
-const T0 = 0.85, T1 = T0 + Math.min(4.3, 0.5 + 0.34 * (N - 1));
+const T0 = 0.85, T1 = N ? T0 + Math.min(4.3, 0.5 + 0.34 * (N - 1)) : 2.75;
+// con 0 seguidores: el cuchillo baja, se frena encima de la sandía, tiembla y se va
+const TZ = { in: .8, stop: 1.75, out: 2.45, gone: 2.85 };
 const planeX = [...Array(NP)].map((_, k) => -A * .86 + 2 * A * .86 * (k + 1) / (NP + 1));
 const order = [...Array(NP).keys()].sort((a, b) => hsh(a * 3.7 + 1) - hsh(b * 3.7 + 1));
 const cuts = [...Array(N)].map((_, i) => {
@@ -25,7 +27,7 @@ const firstCut = Array(NP).fill(1e9); cuts.forEach(c => { firstCut[c.plane] = Ma
 const tDrop = T1 + 0.6, GRAV = 14, fallH = Y0 - (TOP + B), tLand = tDrop + Math.sqrt(2 * fallH / GRAV);
 const tEndText = tLand + 0.3, tCTA = tLand + 0.95, tEnd = tLand + 2.7;
 const NF = Math.round(tEnd * FPS);
-window.TL = { n: N, dia: DIA, fps: FPS, cuts: cuts.map(c => +c.t.toFixed(4)), tDrop, tLand, tEndText, tCTA, tEnd, nf: NF };
+window.TL = { tease: N ? null : TZ, n: N, dia: DIA, fps: FPS, cuts: cuts.map(c => +c.t.toFixed(4)), tDrop, tLand, tEndText, tCTA, tEnd, nf: NF };
 
 // ---------- three ----------
 const cv = document.getElementById('gl');
@@ -176,6 +178,7 @@ function drawGrain(f) { const im = grain.createImageData(540, 960), d = im.data;
 const $ = id => document.getElementById(id);
 $('dia').textContent = 'DÍA ' + DIA;
 $('han').textContent = HANDLE;
+if (!N) $('cta').textContent = 'SÍGUEME Y CORTO LA PRIMERA';
 $('end').innerHTML = `${N} ${N === 1 ? 'seguidor' : 'seguidores'}<br><b>= ${N} ${N === 1 ? 'corte' : 'cortes'}</b>`;
 
 function render(f) {
@@ -186,6 +189,7 @@ function render(f) {
   $('cnt').textContent = `${count} ${count === 1 ? 'corte' : 'cortes'}`;
   $('cnt').style.transform = `scale(${1 + .13 * Math.sin(Math.PI * kp) * (kp < 1)})`;
   $('cnt').style.color = `rgb(255,${Math.round(lerp(208, 255, kc))},${Math.round(lerp(0, 255, kc))})`;
+  if (!N) { const d = t - TZ.out; if (d > 0 && d < .5) { const e = Math.exp(-d * 6); $('cnt').style.transform = `translateX(${22 * e * Math.sin(d * 55)}px)`; $('cnt').style.color = `rgb(255,${Math.round(lerp(255, 59, e))},${Math.round(lerp(255, 74, e))})`; } }
   const kTop = clamp((t - tEndText + .1) / .3);
   ['cnt', 'sub', 'han'].forEach(id => { $(id).style.opacity = 1 - kTop; });
   $('cnt').style.transform += ` translateY(${-40 * eIO(kTop)}px)`;
@@ -223,6 +227,14 @@ function render(f) {
   knives.forEach(k => { k.visible = false; }); ghosts.forEach(g => { g.visible = false; });
   let ki = 0, gi = 0;
   const tipY = (c, tt) => lerp(3.4, -1.95, clamp((tt - (c.t - .11)) / .23));
+  if (!N && t > TZ.in - .05 && t < TZ.gone) {
+    const k = knives[0]; k.visible = true;
+    const a = eOut(clamp((t - TZ.in) / (TZ.stop - TZ.in))), b = clamp((t - TZ.out) / (TZ.gone - TZ.out));
+    const hover = B + .1 + .03 * Math.sin(t * 70) * (t > TZ.stop && t < TZ.out);
+    const tip = lerp(5.2, hover, a) + 6 * b * b;
+    k.position.set(0, tip + 2.55, 0); k.rotation.set(.04 * Math.sin(t * 3), -.65, 0);
+    k.userData.mats.forEach(m => { m.opacity = 1; });
+  }
   for (const c of cuts) {
     const d = t - c.t; if (d < -.13 || d > .2 || ki >= knives.length) continue;
     const k = knives[ki++]; k.visible = true;
