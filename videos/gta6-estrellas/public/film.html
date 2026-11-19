@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Si GTA 6 fuera tu vida real</title>
+<style>
+@font-face{font-family:Montserrat;font-weight:800;src:url(montserrat-latin-800-normal.woff2)}
+@font-face{font-family:Montserrat;font-weight:900;src:url(montserrat-latin-900-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#05050f;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0b0b1e;font-family:Montserrat,sans-serif;color:#fff}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.layer{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none}
+.abs{position:absolute;left:0;top:0;transform-origin:50% 50%;will-change:transform,opacity}
+.pill{display:inline-flex;align-items:center;gap:16px;padding:16px 36px 16px 28px;border-radius:999px;background:rgba(11,10,30,.86);border:3px solid rgba(255,255,255,.2);font-weight:900;font-size:44px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.pill i{font-style:normal;font-size:46px}
+.big{font-weight:900;letter-spacing:-.02em;line-height:.95;text-transform:uppercase}
+.chroma{text-shadow:-6px 0 0 rgba(34,228,255,.85),6px 0 0 rgba(255,46,147,.85),0 0 40px rgba(255,46,147,.55)}
+.glass{background:linear-gradient(160deg,rgba(46,34,104,.86),rgba(13,11,36,.92));border:3px solid var(--c,rgba(255,255,255,.22));border-radius:36px;box-shadow:0 0 22px var(--c,transparent),0 18px 50px rgba(0,0,0,.5)}
+</style></head>
+<body>
+<div id="stage">
+  <canvas id="gl"></canvas>
+  <div id="fx0" class="layer"></div>
+  <div id="hud" class="layer"></div>
+  <div id="fx" class="layer"></div>
+  <div id="wst" class="layer"></div>
+  <canvas id="grain" class="layer" width="540" height="960" style="opacity:.06;mix-blend-mode:overlay"></canvas>
+</div>
+<script src="three.min.js"></script>
+<script src="set.js"></script>
+<script src="timeline.js"></script>
+<script src="actors1.js"></script>
+<script src="actors2.js"></script>
+<script src="film.js"></script>
+</body></html>

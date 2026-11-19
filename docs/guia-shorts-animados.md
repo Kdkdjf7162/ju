@@ -244,3 +244,16 @@ Pines del mapa: rosa = Ocean Beach / South Beach; cian = Little Cuba / Pequeña 
 - `videos/steve-escuela/`: Steve 2000/2026/2050 (Remotion, render lento).
 - `videos/ebook-prueba/`: capítulo de muestra en PDF.
 - `docs/referencias/animacion-a-codigo-recursos.md` y `docs/referencias/awesome-claude-video-skills.md`.
+
+## 16. Video sin voz: "Si GTA 6 fuera tu vida real" (`videos/gta6-estrellas/`)
+
+- **Fórmula:** una acción cotidiana → una estrella más → más policía → clímax con silencio y cámara lenta → WASTED → pregunta final. El HUD de 6 estrellas (arriba, centrado) marca el avance; cada ofensa lleva su pastilla ("🚦 CRUZA EN ROJO +1★").
+- **Se avisa que es ficción:** una pastilla "FICCIÓN" fija a la izquierda de las estrellas, desde el cuadro 0.
+- **Sin voz, todo se entiende por texto + sonido:** cada acción tiene su efecto (papel, bocina, reloj, mensaje, rebanada) y un sonido de estrella que sube de tono.
+- **Cámara lenta del choque:** el tiempo del mundo se frena a 0,2× (curva suave de entrada y salida); la mezcla se vuelve "bajo el agua" (pasa-bajos) y el rotor del helicóptero sigue ese mismo tiempo. Todo lo que depende de la física usa el tiempo del mundo; la cámara y el HUD, el tiempo de video.
+- **Tiroteo:** cada tirador tiene su ritmo y su fase (misma fórmula en animación y sonido), así cada fogonazo coincide con su disparo. Fogonazos grandes, luz puntual que parpadea, trazadoras, casquillos y chispas. Sin sangre.
+- **Cámara:** cerca de los tiradores para ver los fogonazos; nunca detrás de un auto que tape al protagonista. Cuando algo se ve mal en miniatura, mira el cuadro completo.
+- **Cuadro 0:** debe tener ya el título y el HUD (miniatura y empalme del loop).
+- **Sonidos reales conseguidos:** Free Firearm Sound Library (CC0) en `petroulacl/fps-asset-kit`: pistolas, fusiles y pasos sobre piedra. earshot los puntúa como reales (0,7–0,86), mientras que los tiros sintetizados salían "sintéticos" (0,02–0,1). Lo que sigue siendo sintético: sirenas, rotor, frenada, bocina.
+- **Cómo conseguir sonidos reales aquí:** Freesound/Mixkit responden 403 desde la sesión. En cambio, los repos públicos de GitHub se clonan con `git clone --depth 1` (pedir antes `add_repo` con acceso de lectura). Buscar con `gh api -X GET search/repositories -f q="sfx cc0" -f sort=stars`.
+- **Antes de publicar:** violencia ficticia sin sangre; YouTube puede limitar anuncios en contenido con armas. Mantén el rótulo "FICCIÓN".

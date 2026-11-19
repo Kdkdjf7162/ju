@@ -1,0 +1,3 @@
+Disparos: The Free Firearm Sound Library (OpenGameArt, CC0) https://opengameart.org/content/the-free-firearm-sound-library
+Pasos: Fantozzi's Footsteps (OpenGameArt, CC0) https://opengameart.org/content/fantozzis-footsteps-grasssand-stone
+Recopilados en el repo petroulacl/fps-asset-kit (CC0).
