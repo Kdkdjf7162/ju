@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Dinero en el pantalón viejo</title>
+<style>
+@font-face{font-family:Montserrat;font-weight:900;src:url(montserrat-latin-900-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#777}
+#cam{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:0 0}
+.L{position:absolute;left:0;top:0;transform-origin:0 0}
+img{display:block}
+#bg,#front{width:1080px;height:1930px;top:-5px}
+#front{clip-path:inset(1383px 0 0 0)}
+#title{position:absolute;left:0;top:150px;width:1080px;text-align:center;font:900 62px/1.1 Montserrat,sans-serif;color:#fff;
+  -webkit-text-stroke:14px #000;paint-order:stroke fill;letter-spacing:-.01em}
+#tag{position:absolute;left:0;top:1600px;width:1080px;text-align:center;font:900 64px Montserrat,sans-serif;color:#FFD000;-webkit-text-stroke:12px #000;paint-order:stroke fill;opacity:0}
+#fx{position:absolute;left:0;top:0}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 45%,transparent 60%,rgba(0,0,0,.35))}
+</style></head>
+<body>
+<div id="stage">
+  <div id="cam">
+    <img id="bg" class="L" src="../assets/bg.png">
+    <div id="ch" class="L">
+      <img id="torso" class="L" src="../assets/torso.png">
+      <div id="headG" class="L">
+        <img id="head" class="L" src="../assets/head.png">
+        <svg id="face" class="L" style="overflow:visible" width="406" height="447" viewBox="0 0 406 447"></svg>
+      </div>
+    </div>
+    <img id="front" class="L" src="../assets/bg.png">
+    <div id="armRb" class="L"><img src="../assets/arm_c.png" width="356" height="573"></div>
+    <img id="jeans" class="L" src="../assets/jeans_c.png" width="427" height="418">
+    <div id="armL" class="L"><img src="../assets/arm_c.png" width="356" height="573"></div>
+    <div id="armR" class="L"><img src="../assets/arm_c.png" width="356" height="573"><img id="bill" class="L" src="../assets/bill_c.png" width="352" height="204"></div>
+    <canvas id="fx" width="1080" height="1920"></canvas>
+  </div>
+  <div id="vig"></div>
+  <div id="title">Cuando encuentras dinero<br>en un pantalón viejo</div>
+  <div id="tag">…estaba lavado</div>
+</div>
+<script src="film.js"></script>
+</body></html>
