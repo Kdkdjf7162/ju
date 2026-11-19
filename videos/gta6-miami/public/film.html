@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>GTA 6 o Miami</title>
+<style>
+@font-face{font-family:Montserrat;font-weight:800;src:url(montserrat-latin-800-normal.woff2)}
+@font-face{font-family:Montserrat;font-weight:900;src:url(montserrat-latin-900-normal.woff2)}
+:root{--navy:#0B0B1E;--pink:#FF2E93;--cyan:#22E4FF;--yellow:#FFD000;--green:#2BFF88;--red:#FF3B4A;--violet:#B45CFF}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#05050f;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--navy);font-family:Montserrat,sans-serif;color:#fff;transform-origin:540px 960px}
+.layer{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none}
+#bg{width:1080px;height:1920px}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.abs{position:absolute;left:0;top:0;transform-origin:50% 50%;will-change:transform,opacity}
+.pill{display:inline-flex;align-items:center;gap:16px;padding:16px 34px 16px 28px;border-radius:999px;background:rgba(11,10,30,.82);border:2px solid rgba(255,255,255,.16);font-weight:800;font-size:38px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.pill i{display:block;width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c),0 0 26px var(--c)}
+.glass{background:linear-gradient(160deg,rgba(46,34,104,.78),rgba(13,11,36,.88));border:3px solid var(--c,rgba(255,255,255,.2));border-radius:36px;box-shadow:0 0 22px var(--c,transparent),0 18px 50px rgba(0,0,0,.45)}
+.big{font-weight:900;letter-spacing:-.02em;line-height:.95;text-transform:uppercase}
+.chroma{text-shadow:-6px 0 0 rgba(34,228,255,.85),6px 0 0 rgba(255,46,147,.85),0 0 40px rgba(255,46,147,.55)}
+.glowp{text-shadow:0 0 18px rgba(255,46,147,.9),0 0 46px rgba(255,46,147,.6)}
+.glowc{text-shadow:0 0 18px rgba(34,228,255,.9),0 0 46px rgba(34,228,255,.6)}
+.stamp{padding:14px 40px;border-radius:22px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em}
+.tile{width:150px;height:200px;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(170deg,rgba(46,34,104,.85),rgba(13,11,36,.92));border:3px solid rgba(34,228,255,.55)}
+.tile b{font-size:94px;font-weight:900;line-height:1}.tile small{font-size:24px;font-weight:800;letter-spacing:.2em;color:rgba(255,255,255,.6)}
+.bubble{width:450px;min-height:104px;display:flex;align-items:center;gap:18px;padding:18px 22px;border-radius:30px;font-size:30px;font-weight:800;line-height:1.15}
+.bubble .av{flex:none;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#0b0b1e}
+.corner{position:absolute;width:46px;height:46px;border-color:var(--yellow);border-style:solid;filter:drop-shadow(0 0 8px var(--yellow))}
+#cap{position:absolute;left:0;top:0;width:1080px;text-align:center;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap}
+#cap span{display:inline-block;margin:0 .14em;text-shadow:0 0 0 #000,-5px -5px 0 #000,5px -5px 0 #000,-5px 5px 0 #000,5px 5px 0 #000,0 -6px 0 #000,0 6px 0 #000,-6px 0 0 #000,6px 0 0 #000,0 10px 18px rgba(0,0,0,.6)}
+#cap span.on{color:var(--yellow)}
+</style></head>
+<body>
+<div id="stage">
+  <canvas id="bg" class="layer" width="540" height="960"></canvas>
+  <div id="back" class="layer"></div>
+  <canvas id="gl"></canvas>
+  <div id="dim" class="layer" style="background:#0b0b1e;opacity:0"></div>
+  <div id="front" class="layer"></div>
+  <div id="hud" class="layer"></div>
+  <div id="capWrap" class="layer"><div id="cap"></div></div>
+  <div id="fx" class="layer"></div>
+  <canvas id="grain" class="layer" width="540" height="960" style="opacity:.06;mix-blend-mode:overlay"></canvas>
+</div>
+<script src="three.min.js"></script>
+<script src="street.js"></script>
+<script src="timeline.js"></script>
+<script src="tl.js"></script>
+<script src="florida-data.js"></script>
+<script src="film.js"></script>
+</body></html>
