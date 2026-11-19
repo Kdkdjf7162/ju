@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>1 seguidor = 1 corte</title>
+<style>
+@font-face{font-family:Montserrat;font-weight:800;src:url(montserrat-latin-800-normal.woff2)}
+@font-face{font-family:Montserrat;font-weight:900;src:url(montserrat-latin-900-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Montserrat,sans-serif;color:#fff;
+  background:radial-gradient(ellipse 70% 45% at 50% 38%,#34323f 0%,#1d1c26 55%,#0c0c12 100%)}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.t{position:absolute;left:0;width:1080px;text-align:center;font-weight:900;transform-origin:50% 50%;white-space:nowrap}
+#dia{top:150px;font-size:46px;letter-spacing:.14em;color:#FFD000}
+#cnt{top:214px;font-size:120px;letter-spacing:-.02em;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+#sub{top:368px;left:50%;width:auto;transform:translateX(-50%);padding:12px 30px;border-radius:999px;font-size:44px;font-weight:900;color:#fff;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.22)}
+#han{top:452px;font-size:30px;font-weight:800;color:rgba(255,255,255,.45)}
+#end{top:250px;font-size:96px;line-height:1.08;letter-spacing:-.02em;text-shadow:0 8px 40px rgba(0,0,0,.6)}
+#end b{color:#FFD000}
+#cta{top:520px;left:50%;width:auto;transform:translateX(-50%);padding:24px 46px;border-radius:999px;font-size:44px;letter-spacing:.04em;
+  background:#FF2E93;box-shadow:0 0 40px rgba(255,46,147,.55),0 14px 40px rgba(0,0,0,.5)}
+#grain{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:.05;mix-blend-mode:overlay}
+</style></head>
+<body>
+<div id="stage">
+  <canvas id="gl"></canvas>
+  <div id="dia" class="t"></div>
+  <div id="cnt" class="t"></div>
+  <div id="sub" class="t">1 seguidor = 1 corte</div>
+  <div id="han" class="t"></div>
+  <div id="end" class="t"></div>
+  <div id="cta" class="t">SÍGUEME · MAÑANA CORTO MÁS</div>
+  <canvas id="grain" width="540" height="960"></canvas>
+</div>
+<script src="three.min.js"></script>
+<script src="film.js"></script>
+</body></html>

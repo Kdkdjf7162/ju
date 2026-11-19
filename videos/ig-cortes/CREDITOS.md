@@ -1,0 +1,6 @@
+# Créditos de sonido (todo CC0)
+- Kenney RPG Audio: knifeSlice, knifeSlice2, chop — kenney.nl (CC0)
+- Kenney Impact Sounds: impactSoft_*, impactWood_* — kenney.nl (CC0)
+- wyzowl sfx-kit: whoosh-fast-soft, whoosh-slow-soft, pop-medium-in (CC0)
+- Notas de xilófono: síntesis modal propia (sound/mix.py)
+Fuente Montserrat: SIL OFL (public/LICENSE-montserrat.txt)
