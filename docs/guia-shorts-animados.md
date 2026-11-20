@@ -257,3 +257,25 @@ Pines del mapa: rosa = Ocean Beach / South Beach; cian = Little Cuba / Pequeña 
 - **Sonidos reales conseguidos:** Free Firearm Sound Library (CC0) en `petroulacl/fps-asset-kit`: pistolas, fusiles y pasos sobre piedra. earshot los puntúa como reales (0,7–0,86), mientras que los tiros sintetizados salían "sintéticos" (0,02–0,1). Lo que sigue siendo sintético: sirenas, rotor, frenada, bocina.
 - **Cómo conseguir sonidos reales aquí:** Freesound/Mixkit responden 403 desde la sesión. En cambio, los repos públicos de GitHub se clonan con `git clone --depth 1` (pedir antes `add_repo` con acceso de lectura). Buscar con `gh api -X GET search/repositories -f q="sfx cc0" -f sort=stars`.
 - **Antes de publicar:** violencia ficticia sin sangre; YouTube puede limitar anuncios en contenido con armas. Mantén el rótulo "FICCIÓN".
+
+## 17. Método preferido: imágenes de IA en capas + animación por código (`videos/roblox-billete/`)
+Al usuario le gustó mucho más este método que el 3D hecho solo con código.
+1. **Referencia:** sacar un cuadro limpio del video de referencia, subirlo a Higgsfield (`media_upload` + PUT + `media_confirm`) y usarlo como `image_references`.
+2. **Generar piezas sueltas, no escenas enteras** (gpt_image_2_6, quality medium, 1k ≈ 0,5 cr c/u):
+   - fondo vacío 9:16;
+   - personaje SIN cara y SIN brazos, con fondo transparente;
+   - un brazo suelto;
+   - cada objeto por separado.
+   Todo junto costó unos 2,5 créditos.
+3. **Separar cabeza y torso** por color (el borde amarillo/azul) para que la cabeza gire sola.
+4. **Animar por código (DOM + SVG):**
+   - **Caras:** dibujadas en SVG con trazo negro de 10 px que cambian por momento: curioso, sorpresa, canchero, helado, llanto con chorros de lágrimas.
+   - **Cuerpo:** brazos con pivote en el hombro y `scaleY` para el escorzo; respiración y squash al sorprenderse.
+   - **Objetos:** pegados a la mano; los que se rompen se cortan en polígonos con física (gravedad, rebote en la mesa).
+   - **Cámara:** zoom de golpe en cada remate, temblor que se apaga y empuje lento a la cara al final.
+   - **Profundidad:** la mesa del fondo se recorta y se pone delante del personaje.
+5. **Sonido:**
+   - **Solo grabaciones reales CC0**, verificadas con `earshot realness` (el sfx-kit de wyzowl y las notas sintetizadas dan sintético: no usarlos).
+   - **Fuentes que dieron reales:** atomcut-library (opengameart: swishes, bubbles, bells, book-flip, bottle uncork, paper tear, cloth) y Kenney.
+   - **Sin música de fondo.** Cada sonido coincide con algo en pantalla.
+6. **Red:** el entorno necesita `upload.higgsfield.ai`, `d2ol7oe51mr4n9.cloudfront.net` y `d8j0ntlcm91z4.cloudfront.net`.
